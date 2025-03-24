@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class VersusModeManager : MonoBehaviour
 {
-    private TextMeshProUGUI PlayerScoreText;
-    private TextMeshProUGUI EnemyScoreText;
-    private TextMeshProUGUI TimeText;
+    private TextMeshProUGUI _playerScoreText;
+    private TextMeshProUGUI _enemyScoreText;
+    private TextMeshProUGUI _timeText;
 
     /**
      * 정보 저장 변수들
@@ -14,30 +14,32 @@ public class VersusModeManager : MonoBehaviour
      * @param ***Time 대기 시간 및 게임 시간
      * @param Min, Sec 시간 관리에 필요한 변수
      */
-    private float[] Score = new float[2];
-    private float PreparationTime = 5.0f;
-    public float RemainTime = 5.0f;
-    private int Min;
-    private int Sec;
+    private float[] _score = new float[2];
+    private int _timeMin;
+    private int _timeSec;
+
+    [SerializeField]
+    private float _preparationTime = 5.0f;
+    public float _remainTime = 5.0f;
 
     void Start()
     {
-        PlayerScoreText = GameObject.Find("PlayerScore").GetComponent<TextMeshProUGUI>();
-        EnemyScoreText = GameObject.Find("EnemyScore").GetComponent<TextMeshProUGUI>();
-        TimeText = GameObject.Find("Time").GetComponent<TextMeshProUGUI>();
+        _playerScoreText = GameObject.Find("PlayerScore").GetComponent<TextMeshProUGUI>();
+        _enemyScoreText = GameObject.Find("EnemyScore").GetComponent<TextMeshProUGUI>();
+        _timeText = GameObject.Find("Time").GetComponent<TextMeshProUGUI>();
 
-        if (PlayerScoreText == null)
+        if (_playerScoreText == null)
             Debug.LogWarning("PlayerScoreText is not assigned!");
-        if (EnemyScoreText == null)
+        if (_enemyScoreText == null)
             Debug.LogWarning("EnemyScoreText is not assigned!");
 
-        PlayerScoreText.text = "" + (int)Score[0];
-        EnemyScoreText.text = "" + (int)Score[1];
-        TimeText.text = "" + (int)PreparationTime;
+        _playerScoreText.text = "" + (int)_score[0];
+        _enemyScoreText.text = "" + (int)_score[1];
+        _timeText.text = "" + (int)_preparationTime;
 
         // Time.deltaTime에 의해 1초가 빠르게 지나가므로 원하는 시간 설정을 위한 1초 추가
-        PreparationTime += 1.0f;
-        RemainTime += 1.0f;
+        _preparationTime += 1.0f;
+        _remainTime += 1.0f;
 
         // 캐릭터의 상태에 따라 점수값을 추가하는 단계 (Enemy는 아직 구현되어 있지 않음)
         //PlayerState ps = FindFirstObjectByType<PlayerState>();
@@ -53,33 +55,33 @@ public class VersusModeManager : MonoBehaviour
     private void TimeSystem()
     {
         // 준비시간 이후에 메인 시간이 흐르도록 설정
-        if ((int)PreparationTime == 0)
+        if ((int)_preparationTime == 0)
         {
-            if ((int)RemainTime == 0)
+            if ((int)_remainTime == 0)
             {
                 GameEnd();
             }
             else
             {
-                RemainTime -= Time.deltaTime;
-                TimeText.color = Color.black;
+                _remainTime -= Time.deltaTime;
+                _timeText.color = Color.black;
 
-                TimeTextUpdate(RemainTime);
+                TimeTextUpdate(_remainTime);
             }
         }
         else
         {
-            PreparationTime -= Time.deltaTime;
-            TimeTextUpdate(PreparationTime);
+            _preparationTime -= Time.deltaTime;
+            TimeTextUpdate(_preparationTime);
         }
     }
 
     private void TimeTextUpdate(float TimeValue)
     {
-        Min = (int)TimeValue / 60;
-        Sec = (int)TimeValue % 60;
+        _timeMin = (int)TimeValue / 60;
+        _timeSec = (int)TimeValue % 60;
 
-        TimeText.text = "" + string.Format("{0:D2}:{1:D2}", Min, Sec);
+        _timeText.text = "" + string.Format("{0:D2}:{1:D2}", _timeMin, _timeSec);
     }
 
     private void ScoreTextUpdate(byte idx)
@@ -87,31 +89,31 @@ public class VersusModeManager : MonoBehaviour
         switch(idx)
         {
             case 0:
-                PlayerScoreText.text = "" + (int)Score[0];
+                _playerScoreText.text = "" + (int)_score[0];
                 break;
             case 1:
-                EnemyScoreText.text = "" + (int)Score[1];
+                _enemyScoreText.text = "" + (int)_score[1];
                 break;
         }
     }
 
     private void IncreasePlayerScore(object sender, EventArgs eventArgs)
     {
-        Score[0] += 1.0f;
+        _score[0] += 1.0f;
         ScoreTextUpdate(0);
     }
 
     private void IncreaseEnemyScore(object sender, EventArgs eventArgs)
     {
-        Score[1] += 1.0f;
+        _score[1] += 1.0f;
         ScoreTextUpdate(1);
     }
 
     private void GameEnd()
     {
-        if (Score[0] > Score[1])
+        if (_score[0] > _score[1])
             Debug.Log("Player Win");
-        else if (Score[0] < Score[1])
+        else if (_score[0] < _score[1])
             Debug.Log("Enemy Win");
         else
             Debug.Log("DRAW");
