@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 namespace Character
 {
@@ -7,164 +8,154 @@ namespace Character
     public class PlayerMovement : MonoBehaviour
     {
         [Header("Movement Settings")]
-        public float moveSpeed = 5f;
-        public float dashSpeed = 10f;
-        public float dashDuration = 0.2f;
-        public float jumpPower = 5f;
-        public float gravity = 9.81f;
-        public float rotationSpeed = 10f;
-
+        [field: SerializeField] public float MoveSpeed      { get; private set; } = 5f;
+        [field: SerializeField] public float DashSpeed      { get; private set; } = 10f;
+        [field: SerializeField] public float DashDuration   { get; private set; } = 0.2f;
+        [field: SerializeField] public float JumpPower      { get; private set; } = 5f;
+        [field: SerializeField] public float Gravity        { get; private set; } = 9.81f;
+        [field: SerializeField] public float RotationSpeed  { get; private set; } = 10f;
+        
         [Header("Input Actions")]
-        [SerializeField] private InputActionReference moveAction;
-        [SerializeField] private InputActionReference jumpAction;
-        [SerializeField] private InputActionReference dashAction;
+        [field: SerializeField] public InputActionReference MoveAction  { get; private set; }
+        [field: SerializeField] public InputActionReference JumpAction  { get; private set; }
+        [field: SerializeField] public InputActionReference DashAction  { get; private set; }
+
+        [Header("Camera")] 
+        [field: SerializeField] public Transform CameraTransform { get; private set; }
+
+        [Header("Runtime")] 
+        [SerializeField] private Vector3 _horizontalVelocity;
+        [SerializeField] private float _verticalVelocity;
 
         private CharacterController _controller;
         private Animator _animator;
 
-        private Vector3 _moveDirection;
-        private float _verticalVelocity;
-
-        private bool _isDashing;
-        private float _dashTimer;
+        private PlayerStateMachine _stateMachine;
 
         private void Awake()
         {
             _controller = GetComponent<CharacterController>();
-            _animator = GetComponent<Animator>();
+            _animator   = GetComponent<Animator>();
+
+            _stateMachine = new PlayerStateMachine(this);
         }
 
         private void OnEnable()
         {
-            moveAction.action.Enable();
-            jumpAction.action.Enable();
-            dashAction.action.Enable();
+            MoveAction.action.Enable();
+            JumpAction.action.Enable();
+            DashAction.action.Enable();
         }
 
         private void OnDisable()
         {
-            moveAction.action.Disable();
-            jumpAction.action.Disable();
-            dashAction.action.Disable();
+            MoveAction.action.Disable();
+            JumpAction.action.Disable();
+            DashAction.action.Disable();
         }
 
         private void Update()
         {
-            if (!_isDashing)
+            _stateMachine.OnUpdate();
+            
+            // 중력 처리
+            if (!_controller.isGrounded)
             {
-                HandleMovementInput();
-                HandleJump();
-                HandleDashInput();
+                _verticalVelocity -= Gravity * Time.deltaTime;
             }
-            else
+            else if (_verticalVelocity < 0f)
             {
-                UpdateDashTimer();
+                _verticalVelocity = -2f;
             }
-
-            ApplyGravityIfNeeded();
-            HandleRotation();
-            UpdateAnimatorParams();
+            
+            // 최종 이동 및 회전
             MoveCharacter();
-        }
+            RotateCharacter();
 
-        private void HandleMovementInput()
-        {
-            Vector2 input2D = moveAction.action.ReadValue<Vector2>();
-            Vector3 inputDir = new Vector3(input2D.x, 0f, input2D.y).normalized;
-
-            _moveDirection = inputDir * moveSpeed;
-        }
-
-        private void HandleJump()
-        {
-            bool isGrounded = _controller.isGrounded;
-            _animator.SetBool("isGrounded", isGrounded);
-
-            if (isGrounded)
-            {
-                if (_verticalVelocity < 0f)
-                    _verticalVelocity = -1f;
-
-                if (jumpAction.action.triggered)
-                {
-                    _verticalVelocity = jumpPower;
-                    _animator.SetTrigger("jumpTrigger");
-                }
-            }
-        }
-
-        private void HandleDashInput()
-        {
-            Vector2 input2D = moveAction.action.ReadValue<Vector2>();
-            Vector3 inputDir = new Vector3(input2D.x, 0f, input2D.y);
-
-            if (dashAction.action.triggered && inputDir.magnitude > 0.1f)
-            {
-                StartDash(inputDir.normalized);
-            }
-        }
-
-        private void StartDash(Vector3 dashDir)
-        {
-            _isDashing     = true;
-            _dashTimer     = dashDuration;
-            _moveDirection = dashDir * dashSpeed;
-            _animator.SetTrigger("dashStartTrigger");
-        }
-
-        private void UpdateDashTimer()
-        {
-            _dashTimer -= Time.deltaTime;
-            if (_dashTimer <= 0f)
-            {
-                EndDash();
-            }
-        }
-
-        private void EndDash()
-        {
-            _isDashing = false;
-            _animator.SetTrigger("dashEndTrigger");
-        }
-
-        private void ApplyGravityIfNeeded()
-        {
-            if (!_controller.isGrounded || _isDashing)
-            {
-                _verticalVelocity -= gravity * Time.deltaTime;
-            }
-        }
-
-        private void HandleRotation()
-        {
-            if (!_isDashing)
-            {
-                Vector3 horizontalDir = new Vector3(_moveDirection.x, 0f, _moveDirection.z);
-
-                if (horizontalDir.sqrMagnitude > 0.01f)
-                {
-                    Quaternion targetRot = Quaternion.LookRotation(horizontalDir, Vector3.up);
-                    transform.rotation = Quaternion.Slerp(
-                        transform.rotation,
-                        targetRot,
-                        rotationSpeed * Time.deltaTime
-                    );
-                }
-            }
-        }
-
-        private void UpdateAnimatorParams()
-        {
-            float horizontalSpeed = new Vector2(_controller.velocity.x, _controller.velocity.z).magnitude;
+            float horizontalSpeed = _horizontalVelocity.magnitude;
             _animator.SetFloat("speed", horizontalSpeed);
-            _animator.SetFloat("velocityY", _verticalVelocity);
+            _animator.SetBool("isGrounded", IsGrounded());
+        }
+        
+        public Vector2 GetMoveInput()
+        {
+            return MoveAction.action.ReadValue<Vector2>();
         }
 
-        private void MoveCharacter()
+        public Vector3 GetCameraAlignedDirection(Vector2 input2D)
         {
-            Vector3 finalVelocity = _moveDirection;
+            Vector3 camForward = CameraTransform.forward;
+            Vector3 camRight   = CameraTransform.right;
+
+            camForward.y = 0f;
+            camRight.y   = 0f;
+            camForward.Normalize();
+            camRight.Normalize();
+
+            return (camForward * input2D.y + camRight * input2D.x).normalized;
+        }
+        
+        public bool IsDashTriggered()
+        {
+            return DashAction.action.triggered;
+        }
+        
+        public bool IsJumpTriggered()
+        {
+            return JumpAction.action.triggered;
+        }
+
+        public bool IsGrounded()
+        {
+            return _controller.isGrounded;
+        }
+        
+        public void MoveCharacter()
+        {
+            Vector3 finalVelocity = _horizontalVelocity;
             finalVelocity.y = _verticalVelocity;
             _controller.Move(finalVelocity * Time.deltaTime);
+        }
+        
+        public void RotateCharacter()
+        {
+            Vector3 horizontalVelocity = _horizontalVelocity;
+            horizontalVelocity.y = 0f;
+
+            if (horizontalVelocity.sqrMagnitude > 0.01f)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(horizontalVelocity, Vector3.up);
+                transform.rotation = Quaternion.Slerp(
+                    transform.rotation,
+                    targetRot,
+                    RotationSpeed * Time.deltaTime
+                );
+            }
+        }
+        
+        public void SetHorizontalVelocity(Vector3 newHorizontalVelocity)
+        {
+            _horizontalVelocity = newHorizontalVelocity;
+        }
+
+        public void SetVerticalVelocity(float newVerticalVelocity)
+        {
+            _verticalVelocity = newVerticalVelocity;
+        }
+        
+        public void SetAnimatorTrigger(string triggerName)
+        {
+            _animator.SetTrigger(triggerName);
+        }
+
+        public void SetAnimatorBool(string boolName, bool value)
+        {
+            _animator.SetBool(boolName, value);
+        }
+
+        public void SetAnimatorFloat(string floatName, float value)
+        {
+            _animator.SetFloat(floatName, value);
         }
     }
 }
