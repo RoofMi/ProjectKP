@@ -41,8 +41,11 @@ GameObject:
   m_Component:
   - component: {fileID: 5081308932463215295}
   - component: {fileID: 8740973680916966301}
+  - component: {fileID: 2744864308076978443}
   - component: {fileID: 3424386447155530401}
   - component: {fileID: 1473257925764810135}
+  - component: {fileID: 7408508165476197142}
+  - component: {fileID: 3889547308016801510}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -92,6 +95,18 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0.99, z: 0}
+--- !u!114 &2744864308076978443
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5939772538266692760}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ce6223eb0b3b6842ba66a78f53da870, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &3424386447155530401
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -104,18 +119,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac2ed04eb3ba375489bc7f14b145dd85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <MoveSpeed>k__BackingField: 10
-  <DashSpeed>k__BackingField: 30
+  <MoveSpeed>k__BackingField: 20
+  <DashSpeed>k__BackingField: 45
   <DashDuration>k__BackingField: 0.25
-  <JumpPower>k__BackingField: 3
+  <JumpPower>k__BackingField: 5
   <Gravity>k__BackingField: 9.81
   <RotationSpeed>k__BackingField: 10
-  <MoveAction>k__BackingField: {fileID: -1680190386980627800, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  <JumpAction>k__BackingField: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  <DashAction>k__BackingField: {fileID: -7471211009204490832, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   <CameraTransform>k__BackingField: {fileID: 0}
-  _horizontalVelocity: {x: 0, y: 0, z: 0}
-  _verticalVelocity: 0
 --- !u!95 &1473257925764810135
 Animator:
   serializedVersion: 7
@@ -138,6 +148,48 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &7408508165476197142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5939772538266692760}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_NotificationBehavior: 3
+  m_UIInputModule: {fileID: 0}
+  m_DeviceLostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_DeviceRegainedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ControlsChangedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ActionEvents: []
+  m_NeverAutoSwitchControlSchemes: 0
+  m_DefaultControlScheme: Keyboard&Mouse
+  m_DefaultActionMap: Player
+  m_SplitScreenIndex: -1
+  m_Camera: {fileID: 0}
+--- !u!114 &3889547308016801510
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5939772538266692760}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de9426aea5084a84790d6389d221720e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &3733759345616280873
 PrefabInstance:
   m_ObjectHideFlags: 0

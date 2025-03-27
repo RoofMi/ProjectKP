@@ -2,32 +2,42 @@ using UnityEngine;
 
 namespace Character
 {
-    public class JumpState : PlayerState
+    public class JumpState : CharacterState
     {
         private float _verticalVelocity;
+        private Vector2 _moveInput;
 
-        public JumpState(PlayerStateMachine stateMachine, PlayerMovement movement)
-            : base(stateMachine, movement)
+        public JumpState(CharacterStateMachine stateMachine)
+            : base(stateMachine)
         {
         }
 
         public override void OnEnter()
         {
-            Movement.SetVerticalVelocity(Movement.JumpPower);
-            Movement.SetAnimatorTrigger("jumpTrigger");
+            Movement.StartJump();
+            StateMachine.SetAnimatorTrigger("jumpTrigger");
+            StateMachine.SetAnimatorBool("isGrounded", false);
         }
 
         public override void OnUpdate()
         {
+            Movement.UpdateMovement(_moveInput, Time.deltaTime);
+            Movement.UpdateRotation(Time.deltaTime);
+            
             if (Movement.IsGrounded())
             {
-                StateMachine.SetState(new MoveState(StateMachine, Movement, Movement.MoveSpeed));
+                StateMachine.SetState(new MoveState(StateMachine));
             }
         }
 
         public override void OnExit()
         {
             // TODO: 종료시
+        }
+
+        public override void HandleMoveInput(Vector2 inputValue)
+        {
+            _moveInput = inputValue;
         }
     }
 

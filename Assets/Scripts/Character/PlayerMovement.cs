@@ -1,11 +1,9 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 
 namespace Character
 {
     [RequireComponent(typeof(CharacterController))]
-    public class PlayerMovement : MonoBehaviour
+    public class CharacterMovement : MonoBehaviour
     {
         [Header("Movement Settings")]
         [field: SerializeField] public float MoveSpeed      { get; private set; } = 5f;
@@ -14,75 +12,73 @@ namespace Character
         [field: SerializeField] public float JumpPower      { get; private set; } = 5f;
         [field: SerializeField] public float Gravity        { get; private set; } = 9.81f;
         [field: SerializeField] public float RotationSpeed  { get; private set; } = 10f;
-        
-        [Header("Input Actions")]
-        [field: SerializeField] public InputActionReference MoveAction  { get; private set; }
-        [field: SerializeField] public InputActionReference JumpAction  { get; private set; }
-        [field: SerializeField] public InputActionReference DashAction  { get; private set; }
 
         [Header("Camera")] 
         [field: SerializeField] public Transform CameraTransform { get; private set; }
-
-        [Header("Runtime")] 
-        [SerializeField] private Vector3 _horizontalVelocity;
-        [SerializeField] private float _verticalVelocity;
-
-        private CharacterController _controller;
-        private Animator _animator;
-
-        private PlayerStateMachine _stateMachine;
+        
+        private Vector3 _horizontalVelocity;
+        private float _verticalVelocity;
+        
+        private CharacterController _characterController;
 
         private void Awake()
         {
-            _controller = GetComponent<CharacterController>();
-            _animator   = GetComponent<Animator>();
-
-            _stateMachine = new PlayerStateMachine(this);
+            _characterController = GetComponent<CharacterController>();
         }
 
-        private void OnEnable()
+        public void UpdateMovement(Vector2 inputValue, float deltaTime, bool bIsDashing = false)
         {
-            MoveAction.action.Enable();
-            JumpAction.action.Enable();
-            DashAction.action.Enable();
-        }
+            Vector3 moveDirection = GetCameraAlignedDirection(inputValue);
+            _horizontalVelocity = bIsDashing ? moveDirection * DashSpeed : moveDirection * MoveSpeed;
 
-        private void OnDisable()
-        {
-            MoveAction.action.Disable();
-            JumpAction.action.Disable();
-            DashAction.action.Disable();
-        }
-
-        private void Update()
-        {
-            _stateMachine.OnUpdate();
-            
-            // 중력 처리
-            if (!_controller.isGrounded)
+            if (IsGrounded())
             {
-                _verticalVelocity -= Gravity * Time.deltaTime;
+                if (_verticalVelocity < 0f)
+                {
+                    _verticalVelocity = -2f;
+                }
             }
-            else if (_verticalVelocity < 0f)
+            else
             {
-                _verticalVelocity = -2f;
+                _verticalVelocity -= Gravity * deltaTime;
             }
-            
-            // 최종 이동 및 회전
-            MoveCharacter();
-            RotateCharacter();
 
-            float horizontalSpeed = _horizontalVelocity.magnitude;
-            _animator.SetFloat("speed", horizontalSpeed);
-            _animator.SetBool("isGrounded", IsGrounded());
+            Vector3 moveVelocity = _horizontalVelocity;
+            moveVelocity.y = _verticalVelocity;
+            
+            _characterController.Move(moveVelocity * Time.deltaTime);
         }
         
-        public Vector2 GetMoveInput()
+        public void UpdateRotation(float deltaTime, bool bInstantRotation = false)
         {
-            return MoveAction.action.ReadValue<Vector2>();
+            Vector3 horizontalVelocity = _horizontalVelocity;
+            horizontalVelocity.y = 0f;
+
+            if (horizontalVelocity.sqrMagnitude > 0.01f)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(horizontalVelocity, Vector3.up);
+
+                if (bInstantRotation)
+                {
+                    transform.rotation = targetRot;
+                }
+                else
+                {
+                    transform.rotation = Quaternion.Slerp(
+                        transform.rotation,
+                        targetRot,
+                        RotationSpeed * deltaTime
+                    );
+                }
+            }
         }
 
-        public Vector3 GetCameraAlignedDirection(Vector2 input2D)
+        public void StartJump()
+        {
+            _verticalVelocity = JumpPower;
+        }
+        
+        private Vector3 GetCameraAlignedDirection(Vector2 inputValue)
         {
             Vector3 camForward = CameraTransform.forward;
             Vector3 camRight   = CameraTransform.right;
@@ -92,70 +88,17 @@ namespace Character
             camForward.Normalize();
             camRight.Normalize();
 
-            return (camForward * input2D.y + camRight * input2D.x).normalized;
-        }
-        
-        public bool IsDashTriggered()
-        {
-            return DashAction.action.triggered;
-        }
-        
-        public bool IsJumpTriggered()
-        {
-            return JumpAction.action.triggered;
+            return (camForward * inputValue.y + camRight * inputValue.x).normalized;
         }
 
         public bool IsGrounded()
         {
-            return _controller.isGrounded;
-        }
-        
-        public void MoveCharacter()
-        {
-            Vector3 finalVelocity = _horizontalVelocity;
-            finalVelocity.y = _verticalVelocity;
-            _controller.Move(finalVelocity * Time.deltaTime);
-        }
-        
-        public void RotateCharacter()
-        {
-            Vector3 horizontalVelocity = _horizontalVelocity;
-            horizontalVelocity.y = 0f;
-
-            if (horizontalVelocity.sqrMagnitude > 0.01f)
-            {
-                Quaternion targetRot = Quaternion.LookRotation(horizontalVelocity, Vector3.up);
-                transform.rotation = Quaternion.Slerp(
-                    transform.rotation,
-                    targetRot,
-                    RotationSpeed * Time.deltaTime
-                );
-            }
-        }
-        
-        public void SetHorizontalVelocity(Vector3 newHorizontalVelocity)
-        {
-            _horizontalVelocity = newHorizontalVelocity;
+            return _characterController.isGrounded;
         }
 
-        public void SetVerticalVelocity(float newVerticalVelocity)
+        public float GetSpeed()
         {
-            _verticalVelocity = newVerticalVelocity;
-        }
-        
-        public void SetAnimatorTrigger(string triggerName)
-        {
-            _animator.SetTrigger(triggerName);
-        }
-
-        public void SetAnimatorBool(string boolName, bool value)
-        {
-            _animator.SetBool(boolName, value);
-        }
-
-        public void SetAnimatorFloat(string floatName, float value)
-        {
-            _animator.SetFloat(floatName, value);
+            return _horizontalVelocity.magnitude;
         }
     }
 }

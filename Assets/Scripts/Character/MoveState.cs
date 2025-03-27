@@ -2,45 +2,43 @@ using UnityEngine;
 
 namespace Character
 {
-    public class MoveState : PlayerState
+    public class MoveState : CharacterState
     {
         private float _moveSpeed;
+        private Vector2 _moveInput;
 
-        public MoveState(PlayerStateMachine stateMachine, PlayerMovement movement, float moveSpeed)
-            : base(stateMachine, movement)
+        public MoveState(CharacterStateMachine stateMachine)
+            : base(stateMachine)
         {
-            _moveSpeed = moveSpeed;
         }
 
         public override void OnEnter()
         {
-            
+            StateMachine.SetAnimatorBool("isGrounded", true);
         }
 
         public override void OnUpdate()
         {
-            Vector2 input2D = Movement.GetMoveInput();
-
-            Vector3 moveDirection = Movement.GetCameraAlignedDirection(input2D);
-            
-            Movement.SetHorizontalVelocity(moveDirection * _moveSpeed);
-            
-            if (Movement.IsDashTriggered() && moveDirection.sqrMagnitude > 0.01f)
-            {
-                StateMachine.SetState(new DashState(StateMachine, Movement));
-                return;
-            }
-
-            if (Movement.IsJumpTriggered() && Movement.IsGrounded())
-            {
-                StateMachine.SetState(new JumpState(StateMachine, Movement));
-                return;
-            }
+            Movement.UpdateMovement(_moveInput, Time.deltaTime);
+            Movement.UpdateRotation(Time.deltaTime);
+            StateMachine.SetAnimatorFloat("speed", Movement.GetSpeed());
         }
 
         public override void OnExit()
         {
             // TODO: 종료시
+        }
+
+        public override void HandleMoveInput(Vector2 inputValue)
+        {
+            _moveInput = inputValue;
+        }
+
+        public override bool CanJump() => true;
+
+        public override bool CanDash()
+        {
+            return !(_moveInput.magnitude < 0.1f);
         }
     }
 
