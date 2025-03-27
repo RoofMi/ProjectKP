@@ -48,4 +48,16 @@ public class UIMenuManager : MonoBehaviour
     {
         LoadingUIManager.Instance.LoadScene("VersusScene");
     }
+
+    public void ExitButton()
+    {
+        Debug.Log("test");
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#elif !UNITY_EDITOR
+        System.Diagnostics.Process.GetCurrentProcess().Kill();
+#else
+        Application.Quit();
+#endif
+    }
 }
