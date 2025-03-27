@@ -1,12 +1,15 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class UIMenuManager : MonoBehaviour
 {
     private Animator CameraObject;
 
+    public GameObject Canvas_Main;
+    public GameObject Canvas_Setting;
+    public GameObject Canvas_Mode;
+
     public GameObject MainMenu;
-    public GameObject SettingMenu;
-    public GameObject ModeMenu;
     
     void Start()
     {
@@ -14,8 +17,8 @@ public class UIMenuManager : MonoBehaviour
 
         CameraObject.SetFloat("CameraPos", 0);
         MainMenu.SetActive(true);
-        SettingMenu.SetActive(false);
-        ModeMenu.SetActive(false);
+        //SettingMenu.SetActive(false);
+        //ModeMenu.SetActive(false);
     }
 
     // Update is called once per frame
@@ -33,12 +36,16 @@ public class UIMenuManager : MonoBehaviour
     public void SettingPos()
     {
         CameraObject.SetFloat("CameraPos", 1);
-        SettingMenu.SetActive(true);
+        //SettingMenu.SetActive(true);
     }
 
     public void ModePos()
     {
         CameraObject.SetFloat("CameraPos", 2);
-        ModeMenu.SetActive(true);
+        //ModeMenu.SetActive(true);
+    }
+    public void LoadVersusScene()
+    {
+        LoadingUIManager.Instance.LoadScene("VersusScene");
     }
 }
