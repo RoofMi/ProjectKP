@@ -4,7 +4,7 @@ namespace Character
 {
     public class MoveState : CharacterState
     {
-        private float _moveSpeed;
+        // private float _moveSpeed;
         private Vector2 _moveInput;
 
         public MoveState(CharacterStateMachine stateMachine)
