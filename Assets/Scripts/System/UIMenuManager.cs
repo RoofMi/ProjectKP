@@ -51,7 +51,6 @@ public class UIMenuManager : MonoBehaviour
 
     public void ExitButton()
     {
-        Debug.Log("test");
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #elif !UNITY_EDITOR
