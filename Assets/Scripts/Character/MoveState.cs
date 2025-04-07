@@ -18,10 +18,20 @@ namespace Character
         }
 
         public override void OnUpdate()
-        {
-            Movement.UpdateMovement(_moveInput, Time.deltaTime);
-            Movement.UpdateRotation(Time.deltaTime);
-            StateMachine.SetAnimatorFloat("speed", Movement.GetSpeed());
+        {   
+            // AI
+            if (StateMachine.bIsAI && StateMachine.Context.Agent is not null)
+            {
+                float speed = StateMachine.Context.Agent.velocity.magnitude;
+                StateMachine.SetAnimatorFloat("speed", speed);
+            }
+            // Player
+            else if (Movement is not null)
+            {
+                Movement.UpdateMovement(_moveInput, Time.deltaTime);
+                Movement.UpdateRotation(Time.deltaTime);
+                StateMachine.SetAnimatorFloat("speed", Movement.GetSpeed());
+            }
         }
 
         public override void OnExit()

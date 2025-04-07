@@ -1,3 +1,4 @@
+using AI;
 using UnityEngine;
 
 namespace Character
@@ -6,12 +7,27 @@ namespace Character
     {
         private CharacterState _currentState;
         private Animator _animator;
+        
+        public bool bIsAI { get; private set; }
+        public AIContext Context { get; private set; }
         public CharacterMovement Movement { get; private set; }
         
+        // For Player
         public CharacterStateMachine(CharacterMovement movement, Animator animator)
         {
             Movement = movement;
             _animator = animator;
+            this.bIsAI = false;
+            _currentState = new MoveState(this);
+            _currentState.OnEnter();
+        }
+        
+        // For AI
+        public CharacterStateMachine(AIContext context, Animator animator, bool bIsAI)
+        {
+            Context = context;
+            _animator = animator;
+            this.bIsAI = bIsAI;
             _currentState = new MoveState(this);
             _currentState.OnEnter();
         }
