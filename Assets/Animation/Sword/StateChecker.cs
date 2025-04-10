@@ -27,10 +27,6 @@ public class StateChecker : MonoBehaviour
         {
             _currentState.text = "DashState";
         }
-        else if (_characterStateMachine.GetCurrentState() is AttackState)
-        {
-            _currentState.text = "AttackState";
-        }
         else
         {
             _currentState.text = "NULL";
