@@ -16,12 +16,21 @@ namespace Character
 
         public override void OnUpdate()
         {
+            var stateInfo = Animator.GetCurrentAnimatorStateInfo(0);
+            if (stateInfo.IsTag("PreAttack"))
+            {
+                return;
+            }
             
+            float normalizedTime = stateInfo.normalizedTime;
+            if (normalizedTime >= 1f)
+            {
+                StateMachine.HandleComboEnd();
+            }
         }
 
         public override void OnExit()
         {
-            
         }
 
         public override void HandleMoveInput(Vector2 inputValue)
@@ -31,6 +40,14 @@ namespace Character
 
         public override void HandleComboInput()
         {
+            var stateInfo = Animator.GetCurrentAnimatorStateInfo(0);
+            float normalizedTime = stateInfo.normalizedTime;
+            
+            if (normalizedTime is <= 0.5f or >= 0.95f)
+            {
+                return;
+            }
+            
             StateMachine.SetAnimatorTrigger("comboTrigger");
         }
     }

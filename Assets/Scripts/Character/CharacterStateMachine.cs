@@ -7,19 +7,15 @@ namespace Character
     public class CharacterStateMachine
     {
         private CharacterState _currentState;
-        private Animator _animator;
+        public Animator Animator { get; private set; }
         public CharacterMovement Movement { get; private set; }
-
-        private ComboEndBehaviour _comboEndBehaviour;
-
+        
         public event Action OnComboEnded;
         
         public CharacterStateMachine(CharacterMovement movement, Animator animator)
         {
             Movement = movement;
-            _animator = animator;
-
-            _comboEndBehaviour = _animator.GetBehaviour<ComboEndBehaviour>();
+            Animator = animator;
             
             _currentState = new MoveState(this);
             _currentState.OnEnter();
@@ -79,39 +75,29 @@ namespace Character
                 return;
             }
             
-            if (_comboEndBehaviour is not null)
-            {
-                _comboEndBehaviour.OnComboEnded += HandleComboEnd;
-            }
-            
             SetState(new AttackState(this));
         }
 
-        private void HandleComboEnd()
+        public void HandleComboEnd()
         {
-            if (_comboEndBehaviour is not null)
-            {
-                _comboEndBehaviour.OnComboEnded -= HandleComboEnd;
-            }
-            
             SetState(new MoveState(this));
-            _animator.Play("Idle/Run");
+            SetAnimatorTrigger("goToDefaultTrigger");
             OnComboEnded?.Invoke();
         }
 
         public void SetAnimatorBool(string paramName, bool paramValue)
         {
-            _animator.SetBool(paramName, paramValue);
+            Animator.SetBool(paramName, paramValue);
         }
 
         public void SetAnimatorFloat(string paramName, float paramValue)
         {
-            _animator.SetFloat(paramName, paramValue);
+            Animator.SetFloat(paramName, paramValue);
         }
 
         public void SetAnimatorTrigger(string paramName)
         {
-            _animator.SetTrigger(paramName);
+            Animator.SetTrigger(paramName);
         }
 
 

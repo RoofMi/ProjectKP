@@ -6,11 +6,13 @@ namespace Character
     {
         protected CharacterStateMachine StateMachine;
         protected CharacterMovement Movement;
+        protected Animator Animator;
 
         public CharacterState(CharacterStateMachine stateMachine)
         {
             StateMachine = stateMachine;
             Movement = stateMachine.Movement;
+            Animator = stateMachine.Animator;
         }
 
         public abstract void OnEnter();
