@@ -20,8 +20,11 @@ namespace Character
 
         public abstract void HandleMoveInput(Vector2 inputValue);
 
+        public virtual void HandleComboInput() { }
+
         public virtual bool CanJump() => false;
         public virtual bool CanDash() => false;
+        public virtual bool CanAttack() => false;
     }
 
 }

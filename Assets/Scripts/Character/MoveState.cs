@@ -40,6 +40,8 @@ namespace Character
         {
             return !(_moveInput.magnitude < 0.1f);
         }
+
+        public override bool CanAttack() => true;
     }
 
 }
