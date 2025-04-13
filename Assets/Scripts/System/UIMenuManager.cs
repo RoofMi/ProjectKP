@@ -1,24 +1,39 @@
+using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class UIMenuManager : MonoBehaviour
 {
+    // Camera
     private Animator CameraObject;
 
-    public GameObject Canvas_Main;
-    public GameObject Canvas_Setting;
-    public GameObject Canvas_Mode;
+    readonly int m_HashPlayPos = Animator.StringToHash("playPos");
+    readonly int m_HashSettingPos = Animator.StringToHash("settingPos");
+    readonly int m_HashEmptyPos = Animator.StringToHash("emptyPos");
 
-    public GameObject MainMenu;
-    
+    // Bar
+    public GameObject Canvas_Bar;
+    public TextMeshProUGUI Text_Play;
+    public TextMeshProUGUI Text_Empty;
+    public TextMeshProUGUI Text_Setting;
+
+    // Play
+    public GameObject Canvas_Play;
+
+    // Setting
+    public GameObject Canvas_Setting;
+
+    private TextMeshProUGUI CurrentPos;
+
     void Start()
     {
         CameraObject = GetComponent<Animator>();
 
-        CameraObject.SetFloat("CameraPos", 0);
-        MainMenu.SetActive(true);
-        //SettingMenu.SetActive(false);
-        //ModeMenu.SetActive(false);
+        Canvas_Bar.SetActive(true);
+        Canvas_Play.SetActive(true);
+        Canvas_Setting.SetActive(false);
+
+        CurrentPos = Text_Play;
+        CurrentPos.color = Color.cyan;
     }
 
     // Update is called once per frame
@@ -27,26 +42,34 @@ public class UIMenuManager : MonoBehaviour
         
     }
 
-    public void MainPos()
+    public void PlayPos()
     {
-        CameraObject.SetFloat("CameraPos", 0);
-        MainMenu.SetActive(true);
+        CameraObject.SetTrigger(m_HashPlayPos);
+
+        SetCurrentPos(Text_Play);
+
+        Canvas_Play.SetActive(true);
+        Canvas_Setting.SetActive(false);
     }
 
     public void SettingPos()
     {
-        CameraObject.SetFloat("CameraPos", 1);
-        //SettingMenu.SetActive(true);
+        CameraObject.SetTrigger(m_HashSettingPos);
+
+        SetCurrentPos(Text_Setting);
+
+        Canvas_Play.SetActive(false);
+        Canvas_Setting.SetActive(true);
     }
 
-    public void ModePos()
+    public void EmptyPos()
     {
-        CameraObject.SetFloat("CameraPos", 2);
-        //ModeMenu.SetActive(true);
-    }
-    public void LoadVersusScene()
-    {
-        LoadingUIManager.Instance.LoadScene("VersusScene");
+        CameraObject.SetTrigger(m_HashEmptyPos);
+
+        SetCurrentPos(Text_Empty);
+
+        Canvas_Play.SetActive(false);
+        Canvas_Setting.SetActive(false);
     }
 
     public void ExitButton()
@@ -58,5 +81,12 @@ public class UIMenuManager : MonoBehaviour
 #else
         Application.Quit();
 #endif
+    }
+
+    private void SetCurrentPos(TextMeshProUGUI current)
+    {
+        CurrentPos.color = Color.white;
+        CurrentPos = current;
+        CurrentPos.color = Color.cyan;
     }
 }
