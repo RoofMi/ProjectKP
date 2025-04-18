@@ -22,7 +22,7 @@ public class LoadingUIManager : MonoBehaviour
         {
             if (_instance == null)
             {
-                var obj = FindObjectOfType<LoadingUIManager>();
+                var obj = FindFirstObjectByType<LoadingUIManager>();
 
                 if (obj != null)
                     _instance = obj;

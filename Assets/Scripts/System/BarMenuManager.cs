@@ -1,23 +1,26 @@
 using TMPro;
 using UnityEngine;
 
-public class UIMenuManager : MonoBehaviour
+public class BarMenuManager : MonoBehaviour
 {
     // Camera
     private Animator CameraObject;
 
     readonly int m_HashPlayPos = Animator.StringToHash("playPos");
     readonly int m_HashSettingPos = Animator.StringToHash("settingPos");
-    readonly int m_HashEmptyPos = Animator.StringToHash("emptyPos");
+    readonly int m_HashEquipPos = Animator.StringToHash("equipPos");
 
     // Bar
     public GameObject Canvas_Bar;
     public TextMeshProUGUI Text_Play;
-    public TextMeshProUGUI Text_Empty;
+    public TextMeshProUGUI Text_Equip;
     public TextMeshProUGUI Text_Setting;
 
     // Play
     public GameObject Canvas_Play;
+
+    // Equip
+    public GameObject Canvas_Equip;
 
     // Setting
     public GameObject Canvas_Setting;
@@ -30,6 +33,7 @@ public class UIMenuManager : MonoBehaviour
 
         Canvas_Bar.SetActive(true);
         Canvas_Play.SetActive(true);
+        Canvas_Equip.SetActive(false);
         Canvas_Setting.SetActive(false);
 
         CurrentPos = Text_Play;
@@ -49,6 +53,18 @@ public class UIMenuManager : MonoBehaviour
         SetCurrentPos(Text_Play);
 
         Canvas_Play.SetActive(true);
+        Canvas_Equip.SetActive(false);
+        Canvas_Setting.SetActive(false);
+    }
+
+    public void EquipPos()
+    {
+        CameraObject.SetTrigger(m_HashEquipPos);
+
+        SetCurrentPos(Text_Equip);
+
+        Canvas_Play.SetActive(false);
+        Canvas_Equip.SetActive(true);
         Canvas_Setting.SetActive(false);
     }
 
@@ -59,17 +75,8 @@ public class UIMenuManager : MonoBehaviour
         SetCurrentPos(Text_Setting);
 
         Canvas_Play.SetActive(false);
+        Canvas_Equip.SetActive(false);
         Canvas_Setting.SetActive(true);
-    }
-
-    public void EmptyPos()
-    {
-        CameraObject.SetTrigger(m_HashEmptyPos);
-
-        SetCurrentPos(Text_Empty);
-
-        Canvas_Play.SetActive(false);
-        Canvas_Setting.SetActive(false);
     }
 
     public void ExitButton()
