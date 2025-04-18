@@ -2,12 +2,15 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
 public class SettingMenuManager : MonoBehaviour
 {
     public GameObject Canvas_Setting;
+
+    [SerializeField] private TextMeshProUGUI _graphicSettingButtonText;
+    [SerializeField] private TextMeshProUGUI _soundSettingButtonText;
+
     [SerializeField] private GameObject _graphicSetting;
     [SerializeField] private GameObject _soundSetting;
     [SerializeField] private Transform _resolutionObject;
@@ -32,8 +35,7 @@ public class SettingMenuManager : MonoBehaviour
     private int _shadowQualityIdx = 0;
 
     // Setting - Sound
-    //
-    //
+    [SerializeField] private Slider _masterSlider;
 
     // Text
     private TextMeshProUGUI _resolutionText;
@@ -61,6 +63,9 @@ public class SettingMenuManager : MonoBehaviour
         InitSettingOption(_framerateObject, _framerateImages, 5, out _framerateText, out _framerateLeftButton, out _framerateRightButton, OnClickFramerateLeft, OnClickFramerateRight);
         InitSettingOption(_textureQualityObject, _textureQualityImages, 3, out _textureQualityText, out _textureQualityLeftButton, out _textureQualityRightButton, OnClickTextureQualityLeft, OnClickTextureQualityRight);
         InitSettingOption(_shadowQualityObject, _shadowQualityImages, 5, out _shadowQualityText, out _shadowQualityLeftButton, out _shadowQualityRightButton, OnClickShadowQualityLeft, OnClickShadowQualityRight);
+
+
+        _masterSlider.onValueChanged.AddListener(OnMasterVolumeChanged);
     }
     public void VisibleSettingMenu(bool bOffOn)
     {
@@ -71,12 +76,24 @@ public class SettingMenuManager : MonoBehaviour
     {
         _graphicSetting.SetActive(bOffOn);
 
+        if (bOffOn)
+        {
+            _graphicSettingButtonText.color = Color.cyan;
+            _soundSettingButtonText.color = Color.white;
+        }
+
         _soundSetting.SetActive(false);
     }
 
     public void VisibleSoundSetting(bool bOffOn)
     {
         _soundSetting.SetActive(bOffOn);
+
+        if (bOffOn)
+        {
+            _graphicSettingButtonText.color = Color.white;
+            _soundSettingButtonText.color = Color.cyan;
+        }
 
         _graphicSetting.SetActive(false);
     }
@@ -413,5 +430,11 @@ public class SettingMenuManager : MonoBehaviour
             QualitySettings.shadows = UnityEngine.ShadowQuality.All;
             QualitySettings.shadowResolution = (UnityEngine.ShadowResolution)_shadowQualityIdx;
         }
+    }
+
+    public void OnMasterVolumeChanged(float value)
+    {
+        AudioListener.volume = value;
+        Debug.Log(value);
     }
 }
