@@ -23,6 +23,17 @@ namespace Character
             }
             
             float normalizedTime = stateInfo.normalizedTime;
+            
+            // 콤보 추가입력 가능 구간
+            if (normalizedTime is >= 0.8f or < 0.95f)
+            {
+                string nextInput = StateMachine.InputBuffer.GetNextInput();
+                if (nextInput is "Q" or "Click")
+                {
+                    StateMachine.SetAnimatorTrigger("comboTrigger");
+                }
+            }
+            
             if (normalizedTime >= 1f)
             {
                 StateMachine.HandleComboEnd();
@@ -36,19 +47,6 @@ namespace Character
         public override void HandleMoveInput(Vector2 inputValue)
         {  
             
-        }
-
-        public override void HandleComboInput()
-        {
-            var stateInfo = Animator.GetCurrentAnimatorStateInfo(0);
-            float normalizedTime = stateInfo.normalizedTime;
-            
-            if (normalizedTime is <= 0.5f or >= 0.95f)
-            {
-                return;
-            }
-            
-            StateMachine.SetAnimatorTrigger("comboTrigger");
         }
     }
 }

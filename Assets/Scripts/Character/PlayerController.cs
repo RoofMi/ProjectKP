@@ -8,17 +8,19 @@ namespace Character
         private PlayerInputHandler _inputHandler;
         private CharacterStateMachine _stateMachine;
         private Animator _animator;
+        private InputBuffer _inputBuffer;
 
         private void Awake()
         {
             _movement = GetComponent<CharacterMovement>();
             _animator = GetComponent<Animator>();
 
-
-            _stateMachine = new CharacterStateMachine(_movement, _animator);
+            _inputBuffer = new InputBuffer();
+            
+            _stateMachine = new CharacterStateMachine(_movement, _animator, _inputBuffer);
             
             _inputHandler = GetComponent<PlayerInputHandler>();
-            _inputHandler.Init(_stateMachine);
+            _inputHandler.Init(_stateMachine, _inputBuffer);
         }
 
         private void Update()

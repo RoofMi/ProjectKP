@@ -9,13 +9,16 @@ namespace Character
         private CharacterState _currentState;
         public Animator Animator { get; private set; }
         public CharacterMovement Movement { get; private set; }
+
+        public InputBuffer InputBuffer { get; private set; }
         
         public event Action OnComboEnded;
         
-        public CharacterStateMachine(CharacterMovement movement, Animator animator)
+        public CharacterStateMachine(CharacterMovement movement, Animator animator, InputBuffer inputBuffer)
         {
             Movement = movement;
             Animator = animator;
+            InputBuffer = inputBuffer;
             
             _currentState = new MoveState(this);
             _currentState.OnEnter();
@@ -40,12 +43,21 @@ namespace Character
 
         public void OnComboInput()
         {
-            if (_currentState is not AttackState)
+            if (_currentState is null)
             {
                 return;
             }
-
-            _currentState.HandleComboInput();
+            
+            // AttackState로 진입하려는 경우
+            if (_currentState.CanAttack())
+            {
+                SetState(new AttackState(this));
+            }
+            // 이미 AttackState, 추가 콤보 입력 넣는 경우
+            else if (_currentState is AttackState)
+            {
+                _currentState.HandleComboInput();
+            }
         }
 
         public void TryJump()
@@ -66,16 +78,6 @@ namespace Character
             }
             
             SetState(new DashState(this));
-        }
-
-        public void TryAttack()
-        {
-            if (_currentState is null || !_currentState.CanAttack())
-            {
-                return;
-            }
-            
-            SetState(new AttackState(this));
         }
 
         public void HandleComboEnd()

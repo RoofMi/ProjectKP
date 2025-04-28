@@ -7,16 +7,19 @@ namespace Character
     public class PlayerInputHandler : MonoBehaviour
     {
         private CharacterStateMachine _stateMachine;
+        private InputBuffer _inputBuffer;
         
         private InputAction _moveAction;
         private InputAction _jumpAction;
         private InputAction _dashAction;
-        private InputAction _qSkillAction;
-        private InputAction _comboAction;
+        private InputAction _qAction;
+        private InputAction _clickAction;
 
-        public void Init(CharacterStateMachine stateMachine)
+        public void Init(CharacterStateMachine stateMachine, InputBuffer inputBuffer)
         {
             _stateMachine = stateMachine;
+            _inputBuffer = inputBuffer;
+            
             _stateMachine.OnComboEnded += OnComboEnded;
         }
         
@@ -28,37 +31,41 @@ namespace Character
             _moveAction = actionMap.FindAction("Move");
             _jumpAction = actionMap.FindAction("Jump");
             _dashAction = actionMap.FindAction("Dash");
-            _qSkillAction = actionMap.FindAction("QSkill");
-            _comboAction = actionMap.FindAction("Combo");
+            _qAction = actionMap.FindAction("Q");
+            _clickAction = actionMap.FindAction("Click");
             
             _moveAction.Enable();
             _jumpAction.Enable();
             _dashAction.Enable();
-            _qSkillAction.Enable();
-            _comboAction.Enable();
+            _qAction.Enable();
+            _clickAction.Enable();
 
             _jumpAction.performed += OnJumpPerformed;
             _dashAction.performed += OnDashPerformed;
-            _qSkillAction.performed += OnQSkillPerformed;
+            _qAction.performed += OnComboPerformed;
+            _clickAction.performed += OnComboPerformed;
         }
 
         private void Update()
         {
             Vector2 moveInput = _moveAction.ReadValue<Vector2>();
             _stateMachine.OnMoveInput(moveInput);
+            
+            _inputBuffer.UpdateBuffer();
         }
 
         private void OnDisable()
         {
             _jumpAction.performed -= OnJumpPerformed;
             _dashAction.performed -= OnDashPerformed;
-            _qSkillAction.performed -= OnQSkillPerformed;
+            _qAction.performed -= OnComboPerformed;
+            _clickAction.performed -= OnComboPerformed;
 
             _moveAction.Disable();
             _jumpAction.Disable();
             _dashAction.Disable();
-            _qSkillAction.Disable();
-            _comboAction.Disable();
+            _qAction.Disable();
+            _clickAction.Disable();
         }
         
         private void OnJumpPerformed(InputAction.CallbackContext context)
@@ -71,20 +78,17 @@ namespace Character
             _stateMachine.TryDash();
         }
 
-        private void OnQSkillPerformed(InputAction.CallbackContext context)
-        {
-            _comboAction.performed += OnComboPerformed;
-            _stateMachine.TryAttack();
-        }
-
         private void OnComboPerformed(InputAction.CallbackContext context)
         {
+            string actionName = context.action.name;
+            _inputBuffer.AddInput(actionName);
+            
             _stateMachine.OnComboInput();
         }
 
         private void OnComboEnded()
         {
-            _comboAction.performed -= OnComboPerformed;
+            _inputBuffer.ClearAllInputs();
         }
     }
 }
