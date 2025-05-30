@@ -4,7 +4,7 @@ using UnityEngine;
 public class UI_MoveIn : MonoBehaviour
 {
     [Header("Animation Settings")]
-    public float Duration = 0.5f;
+    private float Duration;
     public float Speed = 500.0f;
 
     public enum Direction { Left, Right, Up, Down }

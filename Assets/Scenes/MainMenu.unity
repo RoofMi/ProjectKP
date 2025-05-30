@@ -7106,7 +7106,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 291f61470af73ac4cbabe92b665c8511, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Duration: 0.3
   Speed: 2000
   MoveFrom: 1
 --- !u!1 &391695951
@@ -15764,8 +15763,9 @@ GameObject:
   - component: {fileID: 911803621}
   - component: {fileID: 911803620}
   - component: {fileID: 911803623}
+  - component: {fileID: 911803624}
   m_Layer: 5
-  m_Name: Canvas_Setting
+  m_Name: Canvas_Option
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15869,17 +15869,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 730a4c495fb167d45a969df4e7fbca31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Canvas_Setting: {fileID: 911803618}
-  _graphicSettingButtonText: {fileID: 99353354}
-  _soundSettingButtonText: {fileID: 451377843}
-  _graphicSetting: {fileID: 119170208}
-  _soundSetting: {fileID: 690774655}
-  _resolutionObject: {fileID: 692436496}
-  _fullScreenModeObject: {fileID: 161268121}
-  _framerateObject: {fileID: 1385549980}
-  _textureQualityObject: {fileID: 995881817}
-  _shadowQualityObject: {fileID: 391695952}
-  _masterSlider: {fileID: 1131523551}
+  Canvas_Option: {fileID: 911803618}
+  GraphicOptionButtonText: {fileID: 99353354}
+  SoundOptionButtonText: {fileID: 451377843}
+  GraphicOption: {fileID: 119170208}
+  SoundOption: {fileID: 690774655}
+  ResolutionObject: {fileID: 692436496}
+  FullScreenModeObject: {fileID: 161268121}
+  FramerateObject: {fileID: 1385549980}
+  TextureQualityObject: {fileID: 995881817}
+  ShadowQualityObject: {fileID: 391695952}
+  MasterSlider: {fileID: 1131523551}
+--- !u!114 &911803624
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 911803618}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d9bf49f99bf21c489adb4caec1af6f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &911928778 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 729867273198166643, guid: 19029c1e7c9031d4bb5273374fc0dc4e, type: 3}
@@ -19364,8 +19376,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 911803623}
-        m_TargetAssemblyTypeName: SettingMenuManager, Assembly-CSharp
-        m_MethodName: OnClickSettingApply
+        m_TargetAssemblyTypeName: OptionMenuManager, Assembly-CSharp
+        m_MethodName: ApplyOptions
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -23696,10 +23708,10 @@ RectTransform:
   - {fileID: 1654491928}
   m_Father: {fileID: 41731755}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -800, y: 250}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchorMin: {x: 0, y: 0.5}
+  m_AnchorMax: {x: 0, y: 0.5}
+  m_AnchoredPosition: {x: 411, y: 66}
+  m_SizeDelta: {x: 700, y: 500}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1333046068
 MonoBehaviour:
@@ -23739,8 +23751,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 291f61470af73ac4cbabe92b665c8511, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Duration: 0.5
-  Speed: 1000
+  Speed: 3000
   MoveFrom: 0
 --- !u!1001 &1334399451
 PrefabInstance:
@@ -25701,7 +25712,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 911803623}
-        m_TargetAssemblyTypeName: SettingMenuManager, Assembly-CSharp
+        m_TargetAssemblyTypeName: OptionMenuManager, Assembly-CSharp
         m_MethodName: VisibleSettingMenu
         m_Mode: 6
         m_Arguments:
@@ -37171,7 +37182,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 291f61470af73ac4cbabe92b665c8511, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Duration: 0.5
   Speed: 1000
   MoveFrom: 1
 --- !u!4 &2124748357 stripped
