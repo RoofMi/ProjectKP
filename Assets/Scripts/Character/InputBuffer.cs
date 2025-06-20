@@ -6,7 +6,7 @@ namespace Character
 {
     public class InputBuffer
     {
-        private const float _bufferTime = 0.3f;
+        private const float _bufferTime = 0.5f; // 연타 입력을 위해 버퍼 시간 증가
 
         private Queue<(string inputName, float timeStamp)> _inputQueue = new Queue<(string, float)>();
 

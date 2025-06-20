@@ -1,4 +1,5 @@
 using UnityEngine;
+using Combat;
 
 namespace Character
 {
@@ -9,15 +10,17 @@ namespace Character
         private CharacterStateMachine _stateMachine;
         private Animator _animator;
         private InputBuffer _inputBuffer;
+        private ComboManager _comboManager;
 
         private void Awake()
         {
             _movement = GetComponent<CharacterMovement>();
             _animator = GetComponent<Animator>();
+            _comboManager = GetComponent<ComboManager>();
 
             _inputBuffer = new InputBuffer();
             
-            _stateMachine = new CharacterStateMachine(_movement, _animator, _inputBuffer);
+            _stateMachine = new CharacterStateMachine(_movement, _animator, _inputBuffer, _comboManager);
             
             _inputHandler = GetComponent<PlayerInputHandler>();
             _inputHandler.Init(_stateMachine, _inputBuffer);

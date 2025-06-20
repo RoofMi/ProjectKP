@@ -96,6 +96,33 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "W",
+                    "type": "Button",
+                    "id": "2440d36e-3016-4f64-a7c9-5a4832d36e7b",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "E",
+                    "type": "Button",
+                    "id": "89ee8245-8135-4df1-8603-bf11406259ce",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "R",
+                    "type": "Button",
+                    "id": "c751899c-c54a-4b59-994c-21faaba1a609",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "Click",
                     "type": "Button",
                     "id": "9ec43261-7b54-495e-801a-81e860ab478f",
@@ -499,6 +526,39 @@
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
                     "action": "Q",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "244af9f9-261f-48d7-94f2-cfe0e550843a",
+                    "path": "<Keyboard>/w",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "W",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "08f91e68-0c6a-4f34-923a-d04cd4ab41e8",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "E",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3eb1fd45-f249-4036-b0c8-b4317df55ece",
+                    "path": "<Keyboard>/r",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "R",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

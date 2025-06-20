@@ -13,6 +13,9 @@ namespace Character
         private InputAction _jumpAction;
         private InputAction _dashAction;
         private InputAction _qAction;
+        private InputAction _wAction;
+        private InputAction _eAction;
+        private InputAction _rAction;
         private InputAction _clickAction;
 
         public void Init(CharacterStateMachine stateMachine, InputBuffer inputBuffer)
@@ -32,17 +35,26 @@ namespace Character
             _jumpAction = actionMap.FindAction("Jump");
             _dashAction = actionMap.FindAction("Dash");
             _qAction = actionMap.FindAction("Q");
+            _wAction = actionMap.FindAction("W");
+            _eAction = actionMap.FindAction("E");
+            _rAction = actionMap.FindAction("R");
             _clickAction = actionMap.FindAction("Click");
             
             _moveAction.Enable();
             _jumpAction.Enable();
             _dashAction.Enable();
             _qAction.Enable();
+            _wAction.Enable();
+            _eAction.Enable();
+            _rAction.Enable();
             _clickAction.Enable();
 
             _jumpAction.performed += OnJumpPerformed;
             _dashAction.performed += OnDashPerformed;
             _qAction.performed += OnComboPerformed;
+            _wAction.performed += OnComboPerformed;
+            _eAction.performed += OnComboPerformed;
+            _rAction.performed += OnComboPerformed;
             _clickAction.performed += OnComboPerformed;
         }
 
@@ -59,12 +71,18 @@ namespace Character
             _jumpAction.performed -= OnJumpPerformed;
             _dashAction.performed -= OnDashPerformed;
             _qAction.performed -= OnComboPerformed;
+            _wAction.performed -= OnComboPerformed;
+            _eAction.performed -= OnComboPerformed;
+            _rAction.performed -= OnComboPerformed;
             _clickAction.performed -= OnComboPerformed;
 
             _moveAction.Disable();
             _jumpAction.Disable();
             _dashAction.Disable();
             _qAction.Disable();
+            _wAction.Disable();
+            _eAction.Disable();
+            _rAction.Disable();
             _clickAction.Disable();
         }
         
@@ -83,7 +101,7 @@ namespace Character
             string actionName = context.action.name;
             _inputBuffer.AddInput(actionName);
             
-            _stateMachine.OnComboInput();
+            _stateMachine.OnComboInput(actionName);
         }
 
         private void OnComboEnded()

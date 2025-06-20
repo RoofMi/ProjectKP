@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Combat;
 
 namespace Character
 {
@@ -9,16 +10,18 @@ namespace Character
         private CharacterState _currentState;
         public Animator Animator { get; private set; }
         public CharacterMovement Movement { get; private set; }
+        public ComboManager ComboManager { get; private set; }
 
         public InputBuffer InputBuffer { get; private set; }
         
         public event Action OnComboEnded;
         
-        public CharacterStateMachine(CharacterMovement movement, Animator animator, InputBuffer inputBuffer)
+        public CharacterStateMachine(CharacterMovement movement, Animator animator, InputBuffer inputBuffer, ComboManager comboManager)
         {
             Movement = movement;
             Animator = animator;
             InputBuffer = inputBuffer;
+            ComboManager = comboManager;
             
             _currentState = new MoveState(this);
             _currentState.OnEnter();
@@ -41,9 +44,9 @@ namespace Character
             _currentState.HandleMoveInput(inputValue);
         }
 
-        public void OnComboInput()
+        public void OnComboInput(string inputKey)
         {
-            if (_currentState is null)
+            if (_currentState is null || ComboManager == null)
             {
                 return;
             }
@@ -51,13 +54,14 @@ namespace Character
             // AttackState로 진입하려는 경우
             if (_currentState.CanAttack())
             {
-                SetState(new AttackState(this));
+                // 입력된 키로 첫 콤보 노드 찾기
+                var firstNode = ComboManager.GetFirstComboNode(inputKey);
+                if (firstNode != null)
+                {
+                    SetState(new AttackState(this, ComboManager, firstNode));
+                }
             }
-            // 이미 AttackState, 추가 콤보 입력 넣는 경우
-            else if (_currentState is AttackState)
-            {
-                _currentState.HandleComboInput();
-            }
+            // 이미 AttackState인 경우 InputBuffer가 처리함
         }
 
         public void TryJump()
@@ -82,6 +86,7 @@ namespace Character
 
         public void HandleComboEnd()
         {
+            ComboManager?.ResetCombo();
             SetState(new MoveState(this));
             SetAnimatorTrigger("goToDefaultTrigger");
             OnComboEnded?.Invoke();
@@ -100,6 +105,11 @@ namespace Character
         public void SetAnimatorTrigger(string paramName)
         {
             Animator.SetTrigger(paramName);
+        }
+
+        public void PlayAnimation(string stateName, float transitionDuration = 0.1f)
+        {
+            Animator.CrossFade(stateName, transitionDuration);
         }
 
 
