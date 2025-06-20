@@ -1,4 +1,3 @@
-using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Character
@@ -28,7 +27,6 @@ namespace Character
         public override void OnExit()
         {
             // TODO: 종료시
-            
         }
 
         public override void HandleMoveInput(Vector2 inputValue)
@@ -43,7 +41,7 @@ namespace Character
             return !(_moveInput.magnitude < 0.1f);
         }
 
-        public override bool CanAttackAction() => true;
+        public override bool CanAttack() => true;
     }
 
 }

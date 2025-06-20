@@ -1,17 +1,28 @@
+using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using Combat;
 
 namespace Character
 {
     public class CharacterStateMachine
     {
         private CharacterState _currentState;
-        private Animator _animator;
+        public Animator Animator { get; private set; }
         public CharacterMovement Movement { get; private set; }
+        public ComboManager ComboManager { get; private set; }
 
-        public CharacterStateMachine(CharacterMovement movement, Animator animator)
+        public InputBuffer InputBuffer { get; private set; }
+        
+        public event Action OnComboEnded;
+        
+        public CharacterStateMachine(CharacterMovement movement, Animator animator, InputBuffer inputBuffer, ComboManager comboManager)
         {
             Movement = movement;
-            _animator = animator;
+            Animator = animator;
+            InputBuffer = inputBuffer;
+            ComboManager = comboManager;
+            
             _currentState = new MoveState(this);
             _currentState.OnEnter();
         }
@@ -20,7 +31,7 @@ namespace Character
         {
             _currentState?.OnUpdate();
         }
-
+        
         public void SetState(CharacterState newState)
         {
             _currentState?.OnExit();
@@ -33,16 +44,34 @@ namespace Character
             _currentState.HandleMoveInput(inputValue);
         }
 
+        public void OnComboInput(string inputKey)
+        {
+            if (_currentState is null || ComboManager == null)
+            {
+                return;
+            }
+            
+            // AttackState로 진입하려는 경우
+            if (_currentState.CanAttack())
+            {
+                // 입력된 키로 첫 콤보 노드 찾기
+                var firstNode = ComboManager.GetFirstComboNode(inputKey);
+                if (firstNode != null)
+                {
+                    SetState(new AttackState(this, ComboManager, firstNode));
+                }
+            }
+            // 이미 AttackState인 경우 InputBuffer가 처리함
+        }
+
         public void TryJump()
         {
             if (_currentState == null || !_currentState.CanJump())
             {
                 return;
             }
-            else
-            {
-                SetState(new JumpState(this));
-            }
+            
+            SetState(new JumpState(this));
         }
 
         public void TryDash()
@@ -51,50 +80,36 @@ namespace Character
             {
                 return;
             }
-
+            
             SetState(new DashState(this));
         }
-        public void TryAttackAction()
-        {
-            if (_currentState is AttackState attackState)
-            {
-                attackState.TryAttackInput();
-            }
-            else
-            {
-                SetState(new AttackState(this, _animator, "Attack"));
-            }
-        }
 
-        public void TrySkillQAction()
+        public void HandleComboEnd()
         {
-            if (_currentState is AttackState attackState)
-            {
-                attackState.TryQInput();
-            }
-            else
-            {
-                SetState(new AttackState(this, _animator, "Q"));
-            }
+            ComboManager?.ResetCombo();
+            SetState(new MoveState(this));
+            SetAnimatorTrigger("goToDefaultTrigger");
+            OnComboEnded?.Invoke();
         }
 
         public void SetAnimatorBool(string paramName, bool paramValue)
         {
-            _animator.SetBool(paramName, paramValue);
+            Animator.SetBool(paramName, paramValue);
         }
 
         public void SetAnimatorFloat(string paramName, float paramValue)
         {
-            _animator.SetFloat(paramName, paramValue);
-        }
-        public void SetAnimatorInt(string paramName, int paramValue)
-        {
-            _animator.SetInteger(paramName, paramValue);
+            Animator.SetFloat(paramName, paramValue);
         }
 
         public void SetAnimatorTrigger(string paramName)
         {
-            _animator.SetTrigger(paramName);
+            Animator.SetTrigger(paramName);
+        }
+
+        public void PlayAnimation(string stateName, float transitionDuration = 0.1f)
+        {
+            Animator.CrossFade(stateName, transitionDuration);
         }
 
 

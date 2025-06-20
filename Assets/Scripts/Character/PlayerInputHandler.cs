@@ -7,16 +7,23 @@ namespace Character
     public class PlayerInputHandler : MonoBehaviour
     {
         private CharacterStateMachine _stateMachine;
+        private InputBuffer _inputBuffer;
         
         private InputAction _moveAction;
         private InputAction _jumpAction;
         private InputAction _dashAction;
-        private InputAction _Attack_Action;
-        private InputAction _skill_Q_Action;
+        private InputAction _qAction;
+        private InputAction _wAction;
+        private InputAction _eAction;
+        private InputAction _rAction;
+        private InputAction _clickAction;
 
-        public void Init(CharacterStateMachine stateMachine)
+        public void Init(CharacterStateMachine stateMachine, InputBuffer inputBuffer)
         {
             _stateMachine = stateMachine;
+            _inputBuffer = inputBuffer;
+            
+            _stateMachine.OnComboEnded += OnComboEnded;
         }
         
         private void OnEnable()
@@ -27,40 +34,56 @@ namespace Character
             _moveAction = actionMap.FindAction("Move");
             _jumpAction = actionMap.FindAction("Jump");
             _dashAction = actionMap.FindAction("Dash");
-
-            _Attack_Action = actionMap.FindAction("Attack");
-            _skill_Q_Action = actionMap.FindAction("Skill_Q");
-
-
+            _qAction = actionMap.FindAction("Q");
+            _wAction = actionMap.FindAction("W");
+            _eAction = actionMap.FindAction("E");
+            _rAction = actionMap.FindAction("R");
+            _clickAction = actionMap.FindAction("Click");
+            
             _moveAction.Enable();
             _jumpAction.Enable();
             _dashAction.Enable();
-
-            _Attack_Action.Enable();
-            _skill_Q_Action.Enable();
-
+            _qAction.Enable();
+            _wAction.Enable();
+            _eAction.Enable();
+            _rAction.Enable();
+            _clickAction.Enable();
 
             _jumpAction.performed += OnJumpPerformed;
             _dashAction.performed += OnDashPerformed;
-
-            _Attack_Action.performed += OnAttackPerformed;
-            _skill_Q_Action.performed += OnSkillQPerformed;
+            _qAction.performed += OnComboPerformed;
+            _wAction.performed += OnComboPerformed;
+            _eAction.performed += OnComboPerformed;
+            _rAction.performed += OnComboPerformed;
+            _clickAction.performed += OnComboPerformed;
         }
 
         private void Update()
         {
             Vector2 moveInput = _moveAction.ReadValue<Vector2>();
             _stateMachine.OnMoveInput(moveInput);
+            
+            _inputBuffer.UpdateBuffer();
         }
 
         private void OnDisable()
         {
             _jumpAction.performed -= OnJumpPerformed;
             _dashAction.performed -= OnDashPerformed;
+            _qAction.performed -= OnComboPerformed;
+            _wAction.performed -= OnComboPerformed;
+            _eAction.performed -= OnComboPerformed;
+            _rAction.performed -= OnComboPerformed;
+            _clickAction.performed -= OnComboPerformed;
 
             _moveAction.Disable();
             _jumpAction.Disable();
             _dashAction.Disable();
+            _qAction.Disable();
+            _wAction.Disable();
+            _eAction.Disable();
+            _rAction.Disable();
+            _clickAction.Disable();
         }
         
         private void OnJumpPerformed(InputAction.CallbackContext context)
@@ -73,14 +96,17 @@ namespace Character
             _stateMachine.TryDash();
         }
 
-        private void OnAttackPerformed(InputAction.CallbackContext context)
+        private void OnComboPerformed(InputAction.CallbackContext context)
         {
-            _stateMachine.TryAttackAction();
+            string actionName = context.action.name;
+            _inputBuffer.AddInput(actionName);
+            
+            _stateMachine.OnComboInput(actionName);
         }
 
-        private void OnSkillQPerformed(InputAction.CallbackContext context)
+        private void OnComboEnded()
         {
-            _stateMachine.TrySkillQAction();
+            _inputBuffer.ClearAllInputs();
         }
     }
 }

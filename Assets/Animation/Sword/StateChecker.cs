@@ -13,7 +13,7 @@ public class StateChecker : MonoBehaviour
         _characterStateMachine = GameObject.Find("Player").GetComponent<PlayerController>().GetStateMachine();
     }
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
         if (_characterStateMachine.GetCurrentState() is MoveState)
         {
@@ -26,10 +26,6 @@ public class StateChecker : MonoBehaviour
         else if (_characterStateMachine.GetCurrentState() is DashState)
         {
             _currentState.text = "DashState";
-        }
-        else if (_characterStateMachine.GetCurrentState() is AttackState)
-        {
-            _currentState.text = "AttackState";
         }
         else
         {
