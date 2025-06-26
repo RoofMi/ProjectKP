@@ -53,6 +53,7 @@ namespace Combat
                         Damage = dmg,
                         WindowStart = wStart,
                         WindowEnd = wEnd,
+                        StaminaCost = stepRef.ComboNode.StaminaCost,
                         InputKey = stepRef.InputKey
                     };
                     childList.Add(newNode);

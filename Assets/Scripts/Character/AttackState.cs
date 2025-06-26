@@ -15,6 +15,19 @@ namespace Character
             _comboManager = comboManager;
             _currentComboNode = comboNode;
         }
+        
+        private void UpdateToNextCombo(RuntimeComboNode nextNode)
+        {
+            _currentComboNode = nextNode;
+            _hasCheckedComboWindow = false;
+            
+            // 애니메이션 전환
+            if (nextNode?.StepNode?.AnimClip != null)
+            {
+                string stateName = nextNode.StepNode.AnimClip.name;
+                StateMachine.PlayAnimation(stateName, 0.1f);
+            }
+        }
 
         public override void OnEnter()
         {
@@ -59,9 +72,13 @@ namespace Character
                         var nextNode = _comboManager.TryAdvanceCombo(nextInput);
                         if (nextNode != null)
                         {
-                            // 다음 콤보로 전환
-                            StateMachine.SetState(new AttackState(StateMachine, _comboManager, nextNode));
-                            return;
+                            // 스태미나 체크 후 다음 콤보로
+                            if (StateMachine.Stamina.TryUseStamina(nextNode.StaminaCost))
+                            {
+                                UpdateToNextCombo(nextNode);
+                                return;
+                            }
+                            // 스태미나 부족 시 콤보 중단
                         }
                         // 잘못된 입력은 무시하고 다음 입력 확인
                     }

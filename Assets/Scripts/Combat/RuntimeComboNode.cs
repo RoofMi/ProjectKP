@@ -10,6 +10,7 @@ namespace Combat
         public float Damage;
         public float WindowStart;
         public float WindowEnd;
+        public float StaminaCost;
         
         // Debugging
         public string InputKey;

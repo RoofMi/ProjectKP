@@ -27,18 +27,13 @@ namespace Combat
         
         private void DebugPrintComboTree()
         {
-            Debug.Log("[ComboManager] === Combo Tree Structure ===");
             PrintNode(comboTree.Root, "", 0);
         }
         
         private void PrintNode(RuntimeComboNode node, string prefix, int depth)
         {
-            string nodeName = node.StepNode?.name ?? "ROOT";
-            Debug.Log($"{prefix}└─ {nodeName} (depth: {depth})");
-            
             foreach (var child in node.Children)
             {
-                Debug.Log($"{prefix}   └─ Input: {child.Key}");
                 foreach (var childNode in child.Value)
                 {
                     PrintNode(childNode, prefix + "      ", depth + 1);

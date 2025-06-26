@@ -11,16 +11,23 @@ namespace Character
         private Animator _animator;
         private InputBuffer _inputBuffer;
         private ComboManager _comboManager;
+        private HealthComponent _health;
+        private StaminaComponent _stamina;
+
+        public HealthComponent Health => _health;
+        public StaminaComponent Stamina => _stamina;
 
         private void Awake()
         {
             _movement = GetComponent<CharacterMovement>();
             _animator = GetComponent<Animator>();
             _comboManager = GetComponent<ComboManager>();
+            _health = GetComponent<HealthComponent>();
+            _stamina = GetComponent<StaminaComponent>();
 
             _inputBuffer = new InputBuffer();
             
-            _stateMachine = new CharacterStateMachine(_movement, _animator, _inputBuffer, _comboManager);
+            _stateMachine = new CharacterStateMachine(_movement, _animator, _inputBuffer, _comboManager, _stamina);
             
             _inputHandler = GetComponent<PlayerInputHandler>();
             _inputHandler.Init(_stateMachine, _inputBuffer);

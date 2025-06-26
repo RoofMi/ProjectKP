@@ -11,17 +11,19 @@ namespace Character
         public Animator Animator { get; private set; }
         public CharacterMovement Movement { get; private set; }
         public ComboManager ComboManager { get; private set; }
+        public StaminaComponent Stamina { get; private set; }
 
         public InputBuffer InputBuffer { get; private set; }
         
         public event Action OnComboEnded;
         
-        public CharacterStateMachine(CharacterMovement movement, Animator animator, InputBuffer inputBuffer, ComboManager comboManager)
+        public CharacterStateMachine(CharacterMovement movement, Animator animator, InputBuffer inputBuffer, ComboManager comboManager, StaminaComponent stamina)
         {
             Movement = movement;
             Animator = animator;
             InputBuffer = inputBuffer;
             ComboManager = comboManager;
+            Stamina = stamina;
             
             _currentState = new MoveState(this);
             _currentState.OnEnter();
@@ -58,7 +60,12 @@ namespace Character
                 var firstNode = ComboManager.GetFirstComboNode(inputKey);
                 if (firstNode != null)
                 {
-                    SetState(new AttackState(this, ComboManager, firstNode));
+                    // 스태미나 체크
+                    if (Stamina.TryUseStamina(firstNode.StaminaCost))
+                    {
+                        SetState(new AttackState(this, ComboManager, firstNode));
+                    }
+                    // TryUseStamina가 false를 반환하면 OnStaminaInsufficient 이벤트가 자동 발생
                 }
             }
             // 이미 AttackState인 경우 InputBuffer가 처리함
