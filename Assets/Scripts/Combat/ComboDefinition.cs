@@ -8,9 +8,10 @@ namespace Combat
     {
         public ComboNode ComboNode;
         public string InputKey;
-        public float OverrideDamage;
-        public float OverrideWindowStart;
-        public float OverrideWindowEnd;
+        public float Damage = 10f;
+        public float WindowStart = 0.5f;
+        public float WindowEnd = 0.9f;
+        public float StaminaCost = 10f;
     }
     
     [CreateAssetMenu(fileName = "ComboDefinition", menuName = "Scriptable Objects/ComboDefinition")]

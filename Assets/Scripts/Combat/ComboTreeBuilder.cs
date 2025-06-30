@@ -24,10 +24,6 @@ namespace Combat
             
             foreach (var stepRef in comboDef.ComboSteps)
             {
-                float dmg = (stepRef.OverrideDamage > 0) ? stepRef.OverrideDamage : stepRef.ComboNode.BaseDamage;
-                float wStart = (stepRef.OverrideWindowStart > 0) ? stepRef.OverrideWindowStart : stepRef.ComboNode.BaseWindowStart;
-                float wEnd = (stepRef.OverrideWindowEnd > 0) ? stepRef.OverrideWindowEnd : stepRef.ComboNode.BaseWindowEnd;
-                
                 if (!current.Children.TryGetValue(stepRef.InputKey, out var childList))
                 {
                     childList = new List<RuntimeComboNode>();
@@ -36,9 +32,9 @@ namespace Combat
                 
                 var existingNode = childList.Find(n =>
                     n.StepNode == stepRef.ComboNode &&
-                    Mathf.Approximately(n.Damage, dmg) &&
-                    Mathf.Approximately(n.WindowStart, wStart) &&
-                    Mathf.Approximately(n.WindowEnd, wEnd)
+                    Mathf.Approximately(n.Damage, stepRef.Damage) &&
+                    Mathf.Approximately(n.WindowStart, stepRef.WindowStart) &&
+                    Mathf.Approximately(n.WindowEnd, stepRef.WindowEnd)
                 );
 
                 if (existingNode != null)
@@ -50,10 +46,10 @@ namespace Combat
                     var newNode = new RuntimeComboNode
                     {
                         StepNode = stepRef.ComboNode,
-                        Damage = dmg,
-                        WindowStart = wStart,
-                        WindowEnd = wEnd,
-                        StaminaCost = stepRef.ComboNode.StaminaCost,
+                        Damage = stepRef.Damage,
+                        WindowStart = stepRef.WindowStart,
+                        WindowEnd = stepRef.WindowEnd,
+                        StaminaCost = stepRef.StaminaCost,
                         InputKey = stepRef.InputKey
                     };
                     childList.Add(newNode);

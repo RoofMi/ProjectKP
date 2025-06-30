@@ -76,5 +76,15 @@ namespace Combat
 
             return null;
         }
+
+        public float GetCurrentDamage()
+        {
+            return currentNode?.Damage ?? 0f;
+        }
+
+        public float GetCurrentStaminaCost()
+        {
+            return currentNode?.StaminaCost ?? 0f;
+        }
     }
 }
