@@ -755,7 +755,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e600bf10227ab144812d3fde72ebb51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  comboDefinitions:
+  testCombos:
   - {fileID: 11400000, guid: 593631314bbac8e448428249fc865d5c, type: 2}
   - {fileID: 11400000, guid: 56da7629a888cbf4588411303cc0586c, type: 2}
 --- !u!114 &1575211787
