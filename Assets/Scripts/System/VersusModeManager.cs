@@ -18,9 +18,8 @@ public class VersusModeManager : MonoBehaviour
     private int _timeMin;
     private int _timeSec;
 
-    [SerializeField]
-    private float _preparationTime = 5.0f;
-    public float _remainTime = 5.0f;
+    [SerializeField] private float _preparationTime = 5.0f;
+    [SerializeField] private float _remainTime = 150.0f;
 
     void Start()
     {
@@ -111,11 +110,11 @@ public class VersusModeManager : MonoBehaviour
 
     private void GameEnd()
     {
-        if (_score[0] > _score[1])
-            Debug.Log("Player Win");
-        else if (_score[0] < _score[1])
-            Debug.Log("Enemy Win");
-        else
-            Debug.Log("DRAW");
+        //if (_score[0] > _score[1])
+        //    Debug.Log("Player Win");
+        //else if (_score[0] < _score[1])
+        //    Debug.Log("Enemy Win");
+        //else
+        //    Debug.Log("DRAW");
     }
 }

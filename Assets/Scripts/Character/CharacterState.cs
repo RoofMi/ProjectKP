@@ -6,11 +6,13 @@ namespace Character
     {
         protected CharacterStateMachine StateMachine;
         protected CharacterMovement Movement;
+        protected Animator Animator;
 
         public CharacterState(CharacterStateMachine stateMachine)
         {
             StateMachine = stateMachine;
             Movement = stateMachine.Movement;
+            Animator = stateMachine.Animator;
         }
 
         public abstract void OnEnter();
@@ -20,8 +22,11 @@ namespace Character
 
         public abstract void HandleMoveInput(Vector2 inputValue);
 
+        public virtual void HandleComboInput() { }
+
         public virtual bool CanJump() => false;
         public virtual bool CanDash() => false;
+        public virtual bool CanAttack() => false;
     }
 
 }

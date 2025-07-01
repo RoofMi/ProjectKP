@@ -727,8 +727,69 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5939772538266692760, guid: 8e6d15b65f710984d896dad21e0197b4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1575211780}
+    - targetCorrespondingSourceObject: {fileID: 5939772538266692760, guid: 8e6d15b65f710984d896dad21e0197b4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1575211788}
+    - targetCorrespondingSourceObject: {fileID: 5939772538266692760, guid: 8e6d15b65f710984d896dad21e0197b4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1575211787}
   m_SourcePrefab: {fileID: 100100000, guid: 8e6d15b65f710984d896dad21e0197b4, type: 3}
+--- !u!1 &1575211779 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5939772538266692760, guid: 8e6d15b65f710984d896dad21e0197b4, type: 3}
+  m_PrefabInstance: {fileID: 1575211778}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1575211780
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1575211779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e600bf10227ab144812d3fde72ebb51, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  comboDefinitions:
+  - {fileID: 11400000, guid: 593631314bbac8e448428249fc865d5c, type: 2}
+  - {fileID: 11400000, guid: 56da7629a888cbf4588411303cc0586c, type: 2}
+--- !u!114 &1575211787
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1575211779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16a558dcd7a5e9949966dd21994e6126, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxStamina: 100
+  currentStamina: 0
+  regenRate: 10
+  regenDelay: 1
+  isRegenerating: 1
+  timeSinceLastUse: 0
+--- !u!114 &1575211788
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1575211779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82f73f0fdf885964ba0d3cf388404e67, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 100
+  currentHealth: 0
 --- !u!1 &1637229300
 GameObject:
   m_ObjectHideFlags: 0
