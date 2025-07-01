@@ -7,11 +7,23 @@ namespace Combat
     {
         public static RuntimeComboTree BuildTree(IEnumerable<ComboDefinition> comboDefs)
         {
+            if (comboDefs == null)
+            {
+                Debug.LogError("ComboTreeBuilder: comboDefs is null");
+                return new RuntimeComboTree();
+            }
+            
             var tree = new RuntimeComboTree();
             var rootNode = tree.Root;
             
             foreach (var def in comboDefs)
             {
+                if (def == null || def.ComboSteps == null || def.ComboSteps.Count == 0)
+                {
+                    Debug.LogWarning($"ComboTreeBuilder: Invalid combo definition {def?.name}");
+                    continue;
+                }
+                
                 InsertCombo(def, rootNode);
             }
 
@@ -24,13 +36,19 @@ namespace Combat
             
             foreach (var stepRef in comboDef.ComboSteps)
             {
+                if (stepRef == null || stepRef.ComboNode == null)
+                {
+                    Debug.LogWarning($"ComboTreeBuilder: Invalid step reference in {comboDef.name}");
+                    continue;
+                }
+                
                 if (!current.Children.TryGetValue(stepRef.InputKey, out var childList))
                 {
                     childList = new List<RuntimeComboNode>();
                     current.Children[stepRef.InputKey] = childList;
                 }
                 
-                // StepNode가 다르면 빠르게 스킵
+                // 중복 노드 검사
                 RuntimeComboNode existingNode = null;
                 foreach (var node in childList)
                 {
@@ -51,15 +69,8 @@ namespace Combat
                 }
                 else
                 {
-                    var newNode = new RuntimeComboNode
-                    {
-                        StepNode = stepRef.ComboNode,
-                        Damage = stepRef.Damage,
-                        WindowStart = stepRef.WindowStart,
-                        WindowEnd = stepRef.WindowEnd,
-                        StaminaCost = stepRef.StaminaCost,
-                        InputKey = stepRef.InputKey
-                    };
+                    // 새로운 생성자 사용
+                    var newNode = new RuntimeComboNode(stepRef);
                     childList.Add(newNode);
                     current = newNode;
                 }

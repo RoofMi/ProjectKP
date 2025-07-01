@@ -5,8 +5,8 @@ namespace Combat
 {
     public class ComboManager : MonoBehaviour
     {
-        [Header("ComboDefinition List")]
-        public List<ComboDefinition> comboDefinitions;
+        [Header("Test Combos (임시)")]
+        [SerializeField] private ComboDefinition[] testCombos;
 
         private RuntimeComboTree comboTree;
         private RuntimeComboNode currentNode;
@@ -16,8 +16,30 @@ namespace Combat
 
         void Start()
         {
-            comboTree = ComboTreeBuilder.BuildTree(comboDefinitions);
-            currentNode = comboTree.Root;
+            // 테스트용 콤보로 시작
+            if (testCombos != null && testCombos.Length > 0)
+            {
+                SetWeaponCombos(testCombos);
+            }
+            else
+            {
+                Debug.LogWarning("ComboManager: No test combos assigned!");
+            }
+        }
+        
+		// 무기마다 고정적으로 할당된 콤보가 있다는 가정 하에 구현된 함수
+        public void SetWeaponCombos(ComboDefinition[] weaponCombos)
+        {
+            if (weaponCombos == null || weaponCombos.Length == 0)
+            {
+                Debug.LogWarning("ComboManager: No combos provided for weapon");
+                return;
+            }
+            
+            comboTree = ComboTreeBuilder.BuildTree(weaponCombos);
+            ResetCombo();
+            
+            Debug.Log($"ComboManager: Loaded {weaponCombos.Length} combos");
         }
 
         public RuntimeComboNode TryAdvanceCombo(string inputKey)
