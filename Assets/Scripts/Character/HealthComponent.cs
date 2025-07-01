@@ -1,9 +1,11 @@
 using System;
 using UnityEngine;
+using Combat;
+using Combat.Interfaces;
 
 namespace Character
 {
-    public class HealthComponent : MonoBehaviour
+    public class HealthComponent : MonoBehaviour, IDamageable
     {
         [Header("Health Settings")]
         [SerializeField] private float maxHealth = 100f;
@@ -18,6 +20,8 @@ namespace Character
         public float HealthPercentage => currentHealth / maxHealth;
         public bool IsDead => currentHealth <= 0;
         
+        public Transform Transform => transform;
+        
         private void Awake()
         {
             currentHealth = maxHealth;
@@ -26,22 +30,6 @@ namespace Character
         private void Start()
         {
             OnHealthChanged?.Invoke(currentHealth, maxHealth);
-        }
-        
-        public void TakeDamage(float damage)
-        {
-            if (IsDead) return;
-            
-            float previousHealth = currentHealth;
-            currentHealth = Mathf.Max(0, currentHealth - damage);
-            
-            OnDamageTaken?.Invoke(damage);
-            OnHealthChanged?.Invoke(currentHealth, maxHealth);
-            
-            if (currentHealth <= 0 && previousHealth > 0)
-            {
-                Die();
-            }
         }
         
         public void Heal(float amount)
@@ -78,6 +66,26 @@ namespace Character
         {
             currentHealth = maxHealth * Mathf.Clamp01(healthPercentage);
             OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        }
+        
+        // IDamageable 구현
+        public void TakeDamage(HitInfo hitInfo)
+        {
+            if (IsDead) return;
+            
+            float previousHealth = currentHealth;
+            currentHealth = Mathf.Max(0, currentHealth - hitInfo.damage);
+            
+            OnDamageTaken?.Invoke(hitInfo.damage);
+            OnHealthChanged?.Invoke(currentHealth, maxHealth);
+            
+            if (currentHealth <= 0 && previousHealth > 0)
+            {
+                Die();
+            }
+            
+            // 추가적인 히트 정보 활용 (히트 위치, 공격자 등)
+            // 추후 넉백, 히트 이펙트 등에 사용
         }
     }
 }
