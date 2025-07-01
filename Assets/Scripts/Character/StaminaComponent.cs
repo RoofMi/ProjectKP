@@ -44,6 +44,7 @@ namespace Character
             if (currentStamina >= maxStamina)
             {
                 isRegenerating = false;
+                enabled = false; // Update 중지
                 return;
             }
             
@@ -81,6 +82,7 @@ namespace Character
             
             timeSinceLastUse = 0f;
             isRegenerating = false;
+            enabled = true; // Update 재개
             
             OnStaminaChanged?.Invoke(currentStamina, maxStamina);
             
@@ -103,10 +105,12 @@ namespace Character
             if (restoreToFull)
             {
                 currentStamina = maxStamina;
+                enabled = false; // 최대치면 Update 중지
             }
             else
             {
                 currentStamina = Mathf.Min(currentStamina, maxStamina);
+                enabled = currentStamina < maxStamina; // 필요시에만 Update
             }
             
             OnStaminaChanged?.Invoke(currentStamina, maxStamina);

@@ -9,17 +9,33 @@ namespace Character
         private RuntimeComboNode _currentComboNode;
         private bool _hasCheckedComboWindow;
         
+        // 캐싱된 값들
+        private bool _isInPreAttack = true;
+        private float _windowStart;
+        private float _windowEnd;
+        
         public AttackState(CharacterStateMachine stateMachine, ComboManager comboManager, RuntimeComboNode comboNode)
             : base(stateMachine)
         {
             _comboManager = comboManager;
             _currentComboNode = comboNode;
+            CacheWindowValues();
+        }
+        
+        private void CacheWindowValues()
+        {
+            if (_currentComboNode != null)
+            {
+                _windowStart = _currentComboNode.WindowStart > 0 ? _currentComboNode.WindowStart : 0.5f;
+                _windowEnd = _currentComboNode.WindowEnd > 0 ? _currentComboNode.WindowEnd : 0.9f;
+            }
         }
         
         private void UpdateToNextCombo(RuntimeComboNode nextNode)
         {
             _currentComboNode = nextNode;
             _hasCheckedComboWindow = false;
+            CacheWindowValues();
             
             // 애니메이션 전환
             if (nextNode?.StepNode?.AnimClip != null)
@@ -49,9 +65,15 @@ namespace Character
         public override void OnUpdate()
         {
             var stateInfo = Animator.GetCurrentAnimatorStateInfo(0);
-            if (stateInfo.IsTag("PreAttack"))
+            
+            // PreAttack 상태 체크 (처음 한 번만)
+            if (_isInPreAttack)
             {
-                return;
+                if (stateInfo.IsTag("PreAttack"))
+                {
+                    return;
+                }
+                _isInPreAttack = false; // PreAttack이 끝나면 다시 체크하지 않음
             }
             
             float normalizedTime = stateInfo.normalizedTime;
@@ -59,10 +81,7 @@ namespace Character
             // 콤보 추가입력 가능 구간 체크
             if (_currentComboNode != null)
             {
-                float windowStart = _currentComboNode.WindowStart > 0 ? _currentComboNode.WindowStart : 0.5f;
-                float windowEnd = _currentComboNode.WindowEnd > 0 ? _currentComboNode.WindowEnd : 0.9f;
-                
-                if (normalizedTime >= windowStart && normalizedTime <= windowEnd)
+                if (normalizedTime >= _windowStart && normalizedTime <= _windowEnd)
                 {
                     // 매 프레임 InputBuffer 체크 (연타 입력 대응)
                     string nextInput = StateMachine.InputBuffer.GetNextInput();
@@ -83,7 +102,7 @@ namespace Character
                         // 잘못된 입력은 무시하고 다음 입력 확인
                     }
                 }
-                else if (normalizedTime > windowEnd && !_hasCheckedComboWindow)
+                else if (normalizedTime > _windowEnd && !_hasCheckedComboWindow)
                 {
                     // 윈도우를 놓쳤을 때 버퍼 확인
                     _hasCheckedComboWindow = true;

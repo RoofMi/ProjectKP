@@ -30,12 +30,20 @@ namespace Combat
                     current.Children[stepRef.InputKey] = childList;
                 }
                 
-                var existingNode = childList.Find(n =>
-                    n.StepNode == stepRef.ComboNode &&
-                    Mathf.Approximately(n.Damage, stepRef.Damage) &&
-                    Mathf.Approximately(n.WindowStart, stepRef.WindowStart) &&
-                    Mathf.Approximately(n.WindowEnd, stepRef.WindowEnd)
-                );
+                // StepNode가 다르면 빠르게 스킵
+                RuntimeComboNode existingNode = null;
+                foreach (var node in childList)
+                {
+                    if (node.StepNode == stepRef.ComboNode &&
+                        node.Damage == stepRef.Damage &&
+                        node.WindowStart == stepRef.WindowStart &&
+                        node.WindowEnd == stepRef.WindowEnd &&
+                        node.StaminaCost == stepRef.StaminaCost)
+                    {
+                        existingNode = node;
+                        break;
+                    }
+                }
 
                 if (existingNode != null)
                 {

@@ -18,27 +18,6 @@ namespace Combat
         {
             comboTree = ComboTreeBuilder.BuildTree(comboDefinitions);
             currentNode = comboTree.Root;
-            
-            #if UNITY_EDITOR
-            // 에디터에서만 디버그 출력
-            DebugPrintComboTree();
-            #endif
-        }
-        
-        private void DebugPrintComboTree()
-        {
-            PrintNode(comboTree.Root, "", 0);
-        }
-        
-        private void PrintNode(RuntimeComboNode node, string prefix, int depth)
-        {
-            foreach (var child in node.Children)
-            {
-                foreach (var childNode in child.Value)
-                {
-                    PrintNode(childNode, prefix + "      ", depth + 1);
-                }
-            }
         }
 
         public RuntimeComboNode TryAdvanceCombo(string inputKey)
