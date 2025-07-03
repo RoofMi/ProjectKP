@@ -7,7 +7,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: SkillQ_3
+  m_Name: Combo_3
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -61,7 +61,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: SkillQ_5
+  m_Name: Combo_4-2
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -168,7 +168,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: SkillQ_2
+  m_Name: Combo_2
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -489,7 +489,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: SkillQ_1
+  m_Name: Combo_1
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -515,7 +515,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: SkillQ_4
+  m_Name: Combo_4-1
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
