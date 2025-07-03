@@ -70,6 +70,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   _isActiveOnStart: 1
+  _combatEventChannel: {fileID: 11400000, guid: 61d0f143d8bc67b47ae25c2cdc17880f, type: 2}
   _debugDrawHitbox: 1
   _hitboxColor: {r: 1, g: 0, b: 0, a: 0.3}
   Attacker: {fileID: 0}

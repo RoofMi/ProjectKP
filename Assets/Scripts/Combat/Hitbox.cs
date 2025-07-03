@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Combat.Interfaces;
+using Combat.Events;
 using UnityEngine;
 using UnityEngine.Android;
 
@@ -12,6 +13,9 @@ namespace Combat
         [SerializeField] private LayerMask _targetLayers = -1;
         [SerializeField] private bool _isActiveOnStart = false;
         
+        [Header("Events")]
+        [SerializeField] private CombatEventChannel _combatEventChannel;
+        
         [Header("Debug")]
         [SerializeField] private bool _debugDrawHitbox = true;
         [SerializeField] private Color _hitboxColor = new Color(1f, 0f, 0f, 0.3f);
@@ -19,7 +23,7 @@ namespace Combat
         public GameObject Attacker;
         
         private Collider _hitboxCollider;
-        private HashSet<IDamageable> _hitTargets = new HashSet<IDamageable>();
+        private HashSet<Collider> _hitTargets = new HashSet<Collider>();
         
         private bool _isActive;
         
@@ -60,17 +64,23 @@ namespace Combat
             
             if (other.transform.root == transform.root) return;
             
-            var damageable = other.GetComponent<IDamageable>();
-            if (damageable == null)
+            if (!_hitTargets.Contains(other))
             {
-                damageable = other.GetComponentInParent<IDamageable>();
-            }
-            
-            if (damageable != null && !_hitTargets.Contains(damageable))
-            {
-                _hitTargets.Add(damageable);
+                _hitTargets.Add(other);
                 
                 Debug.Log("Hitted!");
+                
+                var hitInfo = new HitInfo(Attacker, other.gameObject, other.ClosestPoint(transform.position));
+                
+                // 이벤트 발행
+                if (_combatEventChannel != null)
+                {
+                    _combatEventChannel.RaiseHit(hitInfo);
+                }
+                else
+                {
+                    Debug.LogWarning("[Hitbox] CombatEventChannel is not assigned!");
+                }
             }
         }
     }

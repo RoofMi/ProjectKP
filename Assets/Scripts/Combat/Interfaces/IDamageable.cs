@@ -4,7 +4,7 @@ namespace Combat.Interfaces
 {
     public interface IDamageable
     {
-        void TakeDamage(HitInfo hitInfo);
+        void TakeDamage(float damage);
         bool IsDead { get; }
         Transform Transform { get; }
     }

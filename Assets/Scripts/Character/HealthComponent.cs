@@ -11,8 +11,6 @@ namespace Character
         [SerializeField] private float maxHealth = 100f;
         [SerializeField] private float currentHealth;
         
-        public event Action<float, float> OnHealthChanged; // current, max
-        public event Action<float> OnDamageTaken; // damage 양
         public event Action OnDeath;
         
         public float CurrentHealth => currentHealth;
@@ -27,17 +25,11 @@ namespace Character
             currentHealth = maxHealth;
         }
         
-        private void Start()
-        {
-            OnHealthChanged?.Invoke(currentHealth, maxHealth);
-        }
-        
         public void Heal(float amount)
         {
             if (IsDead) return;
             
             currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
-            OnHealthChanged?.Invoke(currentHealth, maxHealth);
         }
         
         public void SetMaxHealth(float newMaxHealth, bool healToFull = false)
@@ -52,8 +44,6 @@ namespace Character
             {
                 currentHealth = Mathf.Min(currentHealth, maxHealth);
             }
-            
-            OnHealthChanged?.Invoke(currentHealth, maxHealth);
         }
         
         private void Die()
@@ -65,19 +55,17 @@ namespace Character
         public void Revive(float healthPercentage = 1f)
         {
             currentHealth = maxHealth * Mathf.Clamp01(healthPercentage);
-            OnHealthChanged?.Invoke(currentHealth, maxHealth);
         }
         
         // IDamageable 구현
-        public void TakeDamage(HitInfo hitInfo)
+        public void TakeDamage(float damage)
         {
             if (IsDead) return;
             
             float previousHealth = currentHealth;
-            currentHealth = Mathf.Max(0, currentHealth - hitInfo.damage);
+            currentHealth = Mathf.Max(0, currentHealth - damage);
             
-            OnDamageTaken?.Invoke(hitInfo.damage);
-            OnHealthChanged?.Invoke(currentHealth, maxHealth);
+            Debug.Log($"[HealthComponent] {gameObject.name} took {damage} damage. Health: {currentHealth}/{maxHealth}");
             
             if (currentHealth <= 0 && previousHealth > 0)
             {
