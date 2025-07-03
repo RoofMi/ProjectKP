@@ -34,19 +34,25 @@ namespace Combat
             _hitboxCollider = GetComponent<Collider>();
             _hitboxCollider.isTrigger = true;
             
-            // if (!_isActiveOnStart)
-            // { 
-            //     DisableHitbox();
-            // }
-            
-            EnableHitbox();
+            if (!_isActiveOnStart)
+            { 
+                DisableHitbox();
+            }
         }
         
         public void EnableHitbox()
         {
+            // 콤보 Window 설정으로 인해 빠르게 콤보를 스킵하다 Disable되기 전 또 다시 Enable되는 경우
+            if (_isActive)
+            {
+                DisableHitbox();
+            }
+            
             _hitTargets.Clear();
             _hitboxCollider.enabled = true;
             _isActive = true;
+            
+            Debug.Log("Hitbox Enabled!");
         }
         
         public void DisableHitbox()
@@ -54,6 +60,8 @@ namespace Combat
             _hitboxCollider.enabled = false;
             _isActive = false;
             _hitTargets.Clear();
+            
+            Debug.Log("Hitbox Disabled!");
         }
         
         private void OnTriggerEnter(Collider other)

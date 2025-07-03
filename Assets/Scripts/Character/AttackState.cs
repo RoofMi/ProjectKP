@@ -9,13 +9,9 @@ namespace Character
         private RuntimeComboNode _currentComboNode;
         private bool _hasCheckedComboWindow;
         
-        // 캐싱된 값들
         private bool _isInPreAttack = true;
         private float _windowStart;
         private float _windowEnd;
-        
-        // 히트박스 관련
-        private Hitbox[] weaponHitboxes;
         
         public AttackState(CharacterStateMachine stateMachine, ComboManager comboManager, RuntimeComboNode comboNode)
             : base(stateMachine)
@@ -51,9 +47,6 @@ namespace Character
         public override void OnEnter()
         {
             _hasCheckedComboWindow = false;
-            
-            // 무기 히트박스 찾기 (캐릭터 하위에서 Hitbox 컴포넌트 검색)
-            weaponHitboxes = StateMachine.Movement.GetComponentsInChildren<Hitbox>(true);
             
             // 콤보 노드에 애니메이션이 있으면 재생
             if (_currentComboNode?.StepNode?.AnimClip != null)

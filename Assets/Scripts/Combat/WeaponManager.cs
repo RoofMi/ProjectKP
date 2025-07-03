@@ -58,7 +58,7 @@ namespace Combat
                 foreach (var hitbox in _hitboxes)
                 {
                     hitbox.Attacker = gameObject;
-                    // hitbox.DisableHitbox();
+                    hitbox.DisableHitbox();
                 }
             }
             else
@@ -82,6 +82,14 @@ namespace Combat
             foreach (var hitbox in _hitboxes)
             {
                 hitbox.EnableHitbox();
+            }
+        }
+        
+        public void DisableHitboxes()
+        {
+            foreach (var hitbox in _hitboxes)
+            {
+                hitbox.DisableHitbox();
             }
         }
         

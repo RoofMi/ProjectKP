@@ -16,7 +16,8 @@ namespace Character
         private InputAction _wAction;
         private InputAction _eAction;
         private InputAction _rAction;
-        private InputAction _clickAction;
+        private InputAction _lightAttackAction;
+        private InputAction _heavyAttackAction;
 
         public void Init(CharacterStateMachine stateMachine, InputBuffer inputBuffer)
         {
@@ -38,7 +39,8 @@ namespace Character
             _wAction = actionMap.FindAction("W");
             _eAction = actionMap.FindAction("E");
             _rAction = actionMap.FindAction("R");
-            _clickAction = actionMap.FindAction("Click");
+            _lightAttackAction = actionMap.FindAction("LightAttack");
+            _heavyAttackAction = actionMap.FindAction("HeavyAttack");
             
             _moveAction.Enable();
             _jumpAction.Enable();
@@ -47,7 +49,8 @@ namespace Character
             _wAction.Enable();
             _eAction.Enable();
             _rAction.Enable();
-            _clickAction.Enable();
+            _lightAttackAction.Enable();
+            _heavyAttackAction.Enable();
 
             _jumpAction.performed += OnJumpPerformed;
             _dashAction.performed += OnDashPerformed;
@@ -55,7 +58,8 @@ namespace Character
             _wAction.performed += OnComboPerformed;
             _eAction.performed += OnComboPerformed;
             _rAction.performed += OnComboPerformed;
-            _clickAction.performed += OnComboPerformed;
+            _lightAttackAction.performed += OnComboPerformed;
+            _heavyAttackAction.performed += OnComboPerformed;
         }
 
         private void Update()
@@ -74,7 +78,8 @@ namespace Character
             _wAction.performed -= OnComboPerformed;
             _eAction.performed -= OnComboPerformed;
             _rAction.performed -= OnComboPerformed;
-            _clickAction.performed -= OnComboPerformed;
+            _lightAttackAction.performed -= OnComboPerformed;
+            _heavyAttackAction.performed -= OnComboPerformed;
 
             _moveAction.Disable();
             _jumpAction.Disable();
@@ -83,7 +88,8 @@ namespace Character
             _wAction.Disable();
             _eAction.Disable();
             _rAction.Disable();
-            _clickAction.Disable();
+            _lightAttackAction.Disable();
+            _heavyAttackAction.Disable();
         }
         
         private void OnJumpPerformed(InputAction.CallbackContext context)

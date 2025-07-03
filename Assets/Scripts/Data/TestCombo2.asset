@@ -10,27 +10,31 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9861695ac56e2ad45b3a94d0a79c7ca5, type: 3}
-  m_Name: QWEW
+  m_Name: TestCombo2
   m_EditorClassIdentifier: 
   ComboName: QWEW
   ComboSteps:
   - ComboNode: {fileID: 11400000, guid: 7a9a368c18f0c1d45a6e39057eb77e0c, type: 2}
-    InputKey: Q
-    OverrideDamage: 0
-    OverrideWindowStart: 0
-    OverrideWindowEnd: 0
+    InputKey: LightAttack
+    Damage: 10
+    WindowStart: 0.5
+    WindowEnd: 0.9
+    StaminaCost: 10
   - ComboNode: {fileID: 11400000, guid: 834abeb4696af994ab3654ace8356e82, type: 2}
-    InputKey: W
-    OverrideDamage: 0
-    OverrideWindowStart: 0
-    OverrideWindowEnd: 0
+    InputKey: LightAttack
+    Damage: 10
+    WindowStart: 0.5
+    WindowEnd: 0.9
+    StaminaCost: 10
   - ComboNode: {fileID: 11400000, guid: 504c3c109f82bde4ebb602e030a2ea92, type: 2}
-    InputKey: E
-    OverrideDamage: 0
-    OverrideWindowStart: 0
-    OverrideWindowEnd: 0
+    InputKey: LightAttack
+    Damage: 10
+    WindowStart: 0.5
+    WindowEnd: 0.9
+    StaminaCost: 10
   - ComboNode: {fileID: 11400000, guid: 5dd4f28fa698b214ba484fbb6a18f737, type: 2}
-    InputKey: W
-    OverrideDamage: 0
-    OverrideWindowStart: 0
-    OverrideWindowEnd: 0
+    InputKey: HeavyAttack
+    Damage: 10
+    WindowStart: 0.5
+    WindowEnd: 0.9
+    StaminaCost: 10
