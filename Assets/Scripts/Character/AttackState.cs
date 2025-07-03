@@ -66,9 +66,6 @@ namespace Character
                 // 기본 공격 애니메이션 트리거
                 StateMachine.SetAnimatorTrigger("qSkillStartTrigger");
             }
-            
-            // 히트박스 활성화 (애니메이션 이벤트로 제어하는 것이 더 정확하지만, 일단 즉시 활성화)
-            EnableHitboxes();
         }
 
         public override void OnUpdate()
@@ -127,35 +124,12 @@ namespace Character
 
         public override void OnExit()
         {
-            DisableHitboxes();
+            
         }
 
         public override void HandleMoveInput(Vector2 inputValue)
         {  
             
-        }
-        
-        private void EnableHitboxes()
-        {
-            if (weaponHitboxes == null || _currentComboNode == null) return;
-            
-            float damage = _currentComboNode.Damage;
-            GameObject attacker = StateMachine.Movement.gameObject;
-            
-            foreach (var hitbox in weaponHitboxes)
-            {
-                hitbox.EnableHitbox(damage, attacker);
-            }
-        }
-        
-        private void DisableHitboxes()
-        {
-            if (weaponHitboxes == null) return;
-            
-            foreach (var hitbox in weaponHitboxes)
-            {
-                hitbox.DisableHitbox();
-            }
         }
     }
 }
