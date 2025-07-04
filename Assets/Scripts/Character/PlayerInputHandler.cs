@@ -13,7 +13,6 @@ namespace Character
         private InputAction _jumpAction;
         private InputAction _dashAction;
         private InputAction _qAction;
-        private InputAction _wAction;
         private InputAction _eAction;
         private InputAction _rAction;
         private InputAction _lightAttackAction;
@@ -36,7 +35,6 @@ namespace Character
             _jumpAction = actionMap.FindAction("Jump");
             _dashAction = actionMap.FindAction("Dash");
             _qAction = actionMap.FindAction("Q");
-            _wAction = actionMap.FindAction("W");
             _eAction = actionMap.FindAction("E");
             _rAction = actionMap.FindAction("R");
             _lightAttackAction = actionMap.FindAction("LightAttack");
@@ -46,7 +44,6 @@ namespace Character
             _jumpAction.Enable();
             _dashAction.Enable();
             _qAction.Enable();
-            _wAction.Enable();
             _eAction.Enable();
             _rAction.Enable();
             _lightAttackAction.Enable();
@@ -55,7 +52,6 @@ namespace Character
             _jumpAction.performed += OnJumpPerformed;
             _dashAction.performed += OnDashPerformed;
             _qAction.performed += OnComboPerformed;
-            _wAction.performed += OnComboPerformed;
             _eAction.performed += OnComboPerformed;
             _rAction.performed += OnComboPerformed;
             _lightAttackAction.performed += OnComboPerformed;
@@ -75,7 +71,6 @@ namespace Character
             _jumpAction.performed -= OnJumpPerformed;
             _dashAction.performed -= OnDashPerformed;
             _qAction.performed -= OnComboPerformed;
-            _wAction.performed -= OnComboPerformed;
             _eAction.performed -= OnComboPerformed;
             _rAction.performed -= OnComboPerformed;
             _lightAttackAction.performed -= OnComboPerformed;
@@ -85,7 +80,6 @@ namespace Character
             _jumpAction.Disable();
             _dashAction.Disable();
             _qAction.Disable();
-            _wAction.Disable();
             _eAction.Disable();
             _rAction.Disable();
             _lightAttackAction.Disable();
@@ -106,8 +100,6 @@ namespace Character
         {
             string actionName = context.action.name;
             _inputBuffer.AddInput(actionName);
-            
-            _stateMachine.OnComboInput(actionName);
         }
 
         private void OnComboEnded()

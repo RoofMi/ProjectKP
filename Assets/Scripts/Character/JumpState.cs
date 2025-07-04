@@ -2,43 +2,51 @@ using UnityEngine;
 
 namespace Character
 {
-    public class JumpState : CharacterState
+    public class JumpState : IState
     {
-        private float _verticalVelocity;
+        private readonly CharacterStateMachine.CharacterContext _context;
         private Vector2 _moveInput;
-
-        public JumpState(CharacterStateMachine stateMachine)
-            : base(stateMachine)
+        
+        public JumpState(CharacterStateMachine.CharacterContext context)
         {
+            _context = context;
         }
-
-        public override void OnEnter()
+        
+        public void OnEnter()
         {
-            Movement.StartJump();
-            StateMachine.SetAnimatorTrigger("jumpTrigger");
-            StateMachine.SetAnimatorBool("isGrounded", false);
+            _context.Movement.StartJump();
+            _context.Animator.SetTrigger("jumpTrigger");
+            _context.Animator.SetBool("isGrounded", false);
         }
-
-        public override void OnUpdate()
+        
+        public StateTransition Update()
         {
-            Movement.UpdateMovement(_moveInput, Time.deltaTime);
-            Movement.UpdateRotation(Time.deltaTime);
+            _context.Movement.UpdateMovement(_moveInput, Time.deltaTime);
+            _context.Movement.UpdateRotation(Time.deltaTime);
             
-            if (Movement.IsGrounded())
+            if (_context.Movement.IsGrounded())
             {
-                StateMachine.SetState(new MoveState(StateMachine));
+                return new StateTransition(StateType.Move);
             }
+            
+            return null;
         }
-
-        public override void OnExit()
+        
+        public StateTransition HandleInput(InputData input)
         {
-            // TODO: 종료시
+            switch (input.Type)
+            {
+                case InputType.Movement:
+                    _moveInput = input.Direction;
+                    break;
+            }
+            
+            return null;
         }
-
-        public override void HandleMoveInput(Vector2 inputValue)
+        
+        public void OnExit()
         {
-            _moveInput = inputValue;
+            // 현재는 비어있지만 인터페이스 구현을 위해 필요
         }
     }
-
 }

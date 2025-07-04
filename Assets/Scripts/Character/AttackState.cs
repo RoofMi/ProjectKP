@@ -3,20 +3,20 @@ using Combat;
 
 namespace Character
 {
-    public class AttackState : CharacterState
+    public class AttackState : IState
     {
-        private readonly ComboManager _comboManager;
+        private readonly CharacterStateMachine.CharacterContext _context;
         private RuntimeComboNode _currentComboNode;
         private bool _hasCheckedComboWindow;
-        
-        private bool _isInPreAttack = true;
+        private bool _isInComboWindow = false;
         private float _windowStart;
         private float _windowEnd;
+        private bool _isTransitionComplete = false;
+        private string _attackAnimName;
         
-        public AttackState(CharacterStateMachine stateMachine, ComboManager comboManager, RuntimeComboNode comboNode)
-            : base(stateMachine)
+        public AttackState(CharacterStateMachine.CharacterContext context, RuntimeComboNode comboNode)
         {
-            _comboManager = comboManager;
+            _context = context;
             _currentComboNode = comboNode;
             CacheWindowValues();
         }
@@ -30,99 +30,121 @@ namespace Character
             }
         }
         
+        public void OnEnter()
+        {
+            _hasCheckedComboWindow = false;
+            _isTransitionComplete = false;
+            
+            if (_currentComboNode?.StepNode?.AnimClip == null)
+            {
+                Debug.LogWarning("No animation clip found for current combo node!");
+                return;
+            }
+            
+            _attackAnimName = _currentComboNode.StepNode.AnimClip.name;
+            _context.Animator.CrossFade(_attackAnimName, 0.1f);
+        }
+        
+        public StateTransition Update()
+        {
+            AnimatorStateInfo stateInfo;
+            float normalizedTime;
+            
+            if (!_isTransitionComplete)
+            {
+                bool isInTransition = _context.Animator.IsInTransition(0);
+                
+                if (isInTransition)
+                {
+                    var nextState = _context.Animator.GetNextAnimatorStateInfo(0);
+                    if (!nextState.IsName(_attackAnimName))
+                        return null;
+                    
+                    stateInfo = nextState;
+                    normalizedTime = nextState.normalizedTime;
+                }
+                else
+                {
+                    _isTransitionComplete = true;
+                    stateInfo = _context.Animator.GetCurrentAnimatorStateInfo(0);
+                    
+                    if (!stateInfo.IsName(_attackAnimName))
+                        return null;
+                        
+                    normalizedTime = stateInfo.normalizedTime;
+                }
+            }
+            else
+            {
+                stateInfo = _context.Animator.GetCurrentAnimatorStateInfo(0);
+                normalizedTime = stateInfo.normalizedTime;
+            }
+            
+            if (_currentComboNode != null)
+            {
+                bool wasInWindow = _isInComboWindow;
+                _isInComboWindow = normalizedTime >= _windowStart && normalizedTime <= _windowEnd;
+                
+                if (wasInWindow && !_isInComboWindow && !_hasCheckedComboWindow)
+                {
+                    _hasCheckedComboWindow = true;
+                    _context.InputBuffer.ClearAllInputs();
+                }
+            }
+            
+            if (_isTransitionComplete && normalizedTime >= 0.95f)
+            {
+                _context.ComboManager.ResetCombo();
+                return new StateTransition(StateType.Move);
+            }
+            
+            return null;
+        }
+        
+        public StateTransition HandleInput(InputData input)
+        {
+            switch (input.Type)
+            {
+                case InputType.Attack:
+                    if (!_isInComboWindow || _currentComboNode == null)
+                        return null;
+                    
+                    var nextNode = _context.ComboManager.TryAdvanceCombo(input.Key);
+                    if (nextNode != null && _context.Stamina.TryUseStamina(nextNode.StaminaCost))
+                    {
+                        UpdateToNextCombo(nextNode);
+                    }
+                    break;
+                    
+                case InputType.Movement:
+                    // TODO: 이동 캔슬 기능은 나중에 구현
+                    // if (_currentComboNode?.IsCancelable == true)
+                    // {
+                    //     return new StateTransition(StateType.Move);
+                    // }
+                    break;
+            }
+            
+            return null;
+        }
+        
+        public void OnExit()
+        {
+            _context.Animator.CrossFade("Idle/Run", 0.1f);
+        }
+        
         private void UpdateToNextCombo(RuntimeComboNode nextNode)
         {
             _currentComboNode = nextNode;
             _hasCheckedComboWindow = false;
+            _isTransitionComplete = false;
             CacheWindowValues();
             
-            // 애니메이션 전환
             if (nextNode?.StepNode?.AnimClip != null)
             {
-                string stateName = nextNode.StepNode.AnimClip.name;
-                StateMachine.PlayAnimation(stateName, 0.1f);
+                _attackAnimName = nextNode.StepNode.AnimClip.name;
+                _context.Animator.CrossFade(_attackAnimName, 0.1f);
             }
-        }
-
-        public override void OnEnter()
-        {
-            _hasCheckedComboWindow = false;
-            
-            // 콤보 노드에 애니메이션이 있으면 재생
-            if (_currentComboNode?.StepNode?.AnimClip != null)
-            {
-                string stateName = _currentComboNode.StepNode.AnimClip.name;
-                StateMachine.PlayAnimation(stateName, 0.1f);
-            }
-            else
-            {
-                // 기본 공격 애니메이션 트리거
-                StateMachine.SetAnimatorTrigger("qSkillStartTrigger");
-            }
-        }
-
-        public override void OnUpdate()
-        {
-            var stateInfo = Animator.GetCurrentAnimatorStateInfo(0);
-            
-            // PreAttack 상태 체크 (처음 한 번만)
-            if (_isInPreAttack)
-            {
-                if (stateInfo.IsTag("PreAttack"))
-                {
-                    return;
-                }
-                _isInPreAttack = false; // PreAttack이 끝나면 다시 체크하지 않음
-            }
-            
-            float normalizedTime = stateInfo.normalizedTime;
-            
-            // 콤보 추가입력 가능 구간 체크
-            if (_currentComboNode != null)
-            {
-                if (normalizedTime >= _windowStart && normalizedTime <= _windowEnd)
-                {
-                    // 매 프레임 InputBuffer 체크 (연타 입력 대응)
-                    string nextInput = StateMachine.InputBuffer.GetNextInput();
-                    
-                    if (!string.IsNullOrEmpty(nextInput))
-                    {
-                        var nextNode = _comboManager.TryAdvanceCombo(nextInput);
-                        if (nextNode != null)
-                        {
-                            // 스태미나 체크 후 다음 콤보로
-                            if (StateMachine.Stamina.TryUseStamina(nextNode.StaminaCost))
-                            {
-                                UpdateToNextCombo(nextNode);
-                                return;
-                            }
-                            // 스태미나 부족 시 콤보 중단
-                        }
-                        // 잘못된 입력은 무시하고 다음 입력 확인
-                    }
-                }
-                else if (normalizedTime > _windowEnd && !_hasCheckedComboWindow)
-                {
-                    // 윈도우를 놓쳤을 때 버퍼 확인
-                    _hasCheckedComboWindow = true;
-                    StateMachine.InputBuffer.ClearAllInputs();
-                }
-            }
-            
-            if (normalizedTime >= 1f)
-            {
-                StateMachine.HandleComboEnd();
-            }
-        }
-
-        public override void OnExit()
-        {
-            
-        }
-
-        public override void HandleMoveInput(Vector2 inputValue)
-        {  
-            
         }
     }
 }
