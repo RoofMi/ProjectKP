@@ -22,8 +22,6 @@ namespace Character
         {
             _stateMachine = stateMachine;
             _inputBuffer = inputBuffer;
-            
-            _stateMachine.OnComboEnded += OnComboEnded;
         }
         
         private void OnEnable()
