@@ -94,7 +94,7 @@ namespace Character
             
             if (_isTransitionComplete && normalizedTime >= 0.95f)
             {
-                _context.ComboManager.ResetCombo();
+                // Stateless: ComboManager는 더 이상 상태를 추적하지 않음
                 return new StateTransition(StateType.Move);
             }
             
@@ -109,7 +109,8 @@ namespace Character
                     if (!_isInComboWindow || _currentComboNode == null)
                         return null;
                     
-                    var nextNode = _context.ComboManager.TryAdvanceCombo(input.Key);
+                    // Stateless: 현재 노드를 전달하여 다음 노드 얻기
+                    var nextNode = _context.ComboManager.GetNextComboNode(_currentComboNode, input.Key);
                     if (nextNode != null && _context.Stamina.TryUseStamina(nextNode.StaminaCost))
                     {
                         UpdateToNextCombo(nextNode);

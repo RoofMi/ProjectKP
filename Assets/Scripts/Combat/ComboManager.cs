@@ -6,9 +6,7 @@ namespace Combat
     public class ComboManager : MonoBehaviour
     {
         private RuntimeComboTree comboTree;
-        private RuntimeComboNode currentNode;
 
-        public RuntimeComboNode CurrentNode => currentNode;
         public RuntimeComboNode RootNode => comboTree?.Root;
         
 		// 무기마다 고정적으로 할당된 콤보가 있다는 가정 하에 구현된 함수
@@ -21,10 +19,10 @@ namespace Combat
             }
             
             comboTree = ComboTreeBuilder.BuildTree(weaponCombos);
-            ResetCombo();
         }
 
-        public RuntimeComboNode TryAdvanceCombo(string inputKey)
+        // Stateless: 현재 노드를 파라미터로 받아 다음 노드 반환
+        public RuntimeComboNode GetNextComboNode(RuntimeComboNode currentNode, string inputKey)
         {
             if (currentNode == null || !currentNode.Children.TryGetValue(inputKey, out var childList))
             {
@@ -32,20 +30,10 @@ namespace Combat
             }
 
             // 첫 번째 매칭된 노드 선택 (추후 조건 기반 선택 로직 추가 가능)
-            var nextNode = childList[0];
-            currentNode = nextNode;
-            
-            return nextNode;
+            return childList[0];
         }
 
-        public void ResetCombo()
-        {
-            if (comboTree != null)
-            {
-                currentNode = comboTree.Root;
-            }
-        }
-
+        // Stateless: 루트에서 시작하는 첫 콤보 노드 반환
         public RuntimeComboNode GetFirstComboNode(string inputKey)
         {
             if (comboTree?.Root == null)
@@ -53,21 +41,10 @@ namespace Combat
 
             if (comboTree.Root.Children.TryGetValue(inputKey, out var childList) && childList.Count > 0)
             {
-                currentNode = childList[0];
-                return currentNode;
+                return childList[0];
             }
 
             return null;
-        }
-
-        public float GetCurrentDamage()
-        {
-            return currentNode?.Damage ?? 0f;
-        }
-
-        public float GetCurrentStaminaCost()
-        {
-            return currentNode?.StaminaCost ?? 0f;
         }
     }
 }

@@ -26,8 +26,6 @@ namespace Character
             public InputBuffer InputBuffer { get; set; }
         }
         
-        public event Action OnComboEnded;
-        
         public CharacterStateMachine(CharacterMovement movement, Animator animator, InputBuffer inputBuffer, ComboManager comboManager, StaminaComponent stamina)
         {
             Movement = movement;
