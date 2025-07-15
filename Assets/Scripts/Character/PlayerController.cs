@@ -30,12 +30,11 @@ namespace Character
             _stateMachine = new CharacterStateMachine(_movement, _animator, _inputBuffer, _comboManager, _stamina);
             
             _inputHandler = GetComponent<PlayerInputHandler>();
-            _inputHandler.Init(_stateMachine, _inputBuffer);
         }
 
         private void Update()
         {
-            _stateMachine.OnUpdate();
+            // _stateMachine.OnUpdate();
         }
 
     }

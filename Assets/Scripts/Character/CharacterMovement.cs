@@ -6,12 +6,15 @@ namespace Character
     public class CharacterMovement : MonoBehaviour
     {
         [Header("Movement Settings")]
-        [field: SerializeField] public float MoveSpeed      { get; private set; } = 5f;
-        [field: SerializeField] public float DashSpeed      { get; private set; } = 10f;
-        [field: SerializeField] public float DashDuration   { get; private set; } = 0.2f;
-        [field: SerializeField] public float JumpPower      { get; private set; } = 5f;
-        [field: SerializeField] public float Gravity        { get; private set; } = 9.81f;
-        [field: SerializeField] public float RotationSpeed  { get; private set; } = 10f;
+        [SerializeField] private float moveSpeed = 5f;
+        [SerializeField] private float jumpPower = 5f;
+        [SerializeField] private float gravity = 9.81f;
+        [SerializeField] private float rotationSpeed = 10f;
+        
+        public float MoveSpeed => moveSpeed;
+        public float JumpPower => jumpPower;
+        public float Gravity => gravity;
+        public float RotationSpeed => rotationSpeed;
 
         [Header("Camera")] 
         [field: SerializeField] public Transform CameraTransform { get; private set; }
@@ -19,34 +22,84 @@ namespace Character
         private Vector3 _horizontalVelocity;
         private float _verticalVelocity;
         
+        [Header("Debug")]
+        [SerializeField] private bool _gravityEnabled = true;
+        
         private CharacterController _characterController;
+        
+        private Vector3 _dashVelocity;
+        private Vector2 _inputVector;
 
         private void Awake()
         {
             _characterController = GetComponent<CharacterController>();
         }
-
-        public void UpdateMovement(Vector2 inputValue, float deltaTime, bool bIsDashing = false)
+        
+        private void Update()
         {
-            Vector3 moveDirection = GetCameraAlignedDirection(inputValue);
-            _horizontalVelocity = bIsDashing ? moveDirection * DashSpeed : moveDirection * MoveSpeed;
-
-            if (IsGrounded())
+            UpdateMovement(_inputVector, Time.deltaTime);
+        }
+        
+        public void SetInput(Vector2 input)
+        {
+            _inputVector = input;
+        }
+        
+        public void UpdateMovement(Vector2 inputValue, float deltaTime)
+        {
+            if (_dashVelocity.magnitude > 0)
             {
-                if (_verticalVelocity < 0f)
+                if (IsGrounded())
                 {
-                    _verticalVelocity = -2f;
+                    if (_verticalVelocity < 0f)
+                    {
+                        _verticalVelocity = -2f;
+                    }
                 }
+                else
+                {
+                    if (_gravityEnabled)
+                    {
+                        _verticalVelocity -= Gravity * deltaTime;
+                    }
+                    else
+                    {
+                        _verticalVelocity = 0f;
+                    }
+                }
+                
+                Vector3 totalVelocity = _dashVelocity;
+                totalVelocity.y = _verticalVelocity;
+                _characterController.Move(totalVelocity * deltaTime);
             }
             else
             {
-                _verticalVelocity -= Gravity * deltaTime;
-            }
+                Vector3 moveDirection = GetCameraAlignedDirection(inputValue);
+                _horizontalVelocity = moveDirection * MoveSpeed;
 
-            Vector3 moveVelocity = _horizontalVelocity;
-            moveVelocity.y = _verticalVelocity;
-            
-            _characterController.Move(moveVelocity * Time.deltaTime);
+                if (IsGrounded())
+                {
+                    if (_verticalVelocity < 0f)
+                    {
+                        _verticalVelocity = -2f;
+                    }
+                }
+                else
+                {
+                    if (_gravityEnabled)
+                    {
+                        _verticalVelocity -= Gravity * deltaTime;
+                    }
+                    else
+                    {
+                        _verticalVelocity = 0f;
+                    }
+                }
+
+                Vector3 moveVelocity = _horizontalVelocity;
+                moveVelocity.y = _verticalVelocity;
+                _characterController.Move(moveVelocity * deltaTime);
+            }
         }
         
         public void UpdateRotation(float deltaTime, bool bInstantRotation = false)
@@ -85,10 +138,13 @@ namespace Character
 
             camForward.y = 0f;
             camRight.y   = 0f;
+            
             camForward.Normalize();
             camRight.Normalize();
 
-            return (camForward * inputValue.y + camRight * inputValue.x).normalized;
+            Vector3 direction = camForward * inputValue.y + camRight * inputValue.x;
+            
+            return direction.normalized;
         }
 
         public bool IsGrounded()
@@ -100,5 +156,33 @@ namespace Character
         {
             return _horizontalVelocity.magnitude;
         }
+        
+        public void SetGravityEnabled(bool enabled)
+        {
+            _gravityEnabled = enabled;
+        }
+        
+        public void ResetVerticalVelocity()
+        {
+            _verticalVelocity = 0f;
+        }
+        
+        public void SetDashVelocity(Vector3 velocity)
+        {
+            _dashVelocity = velocity;
+            _dashVelocity.y = 0f;
+        }
+        
+        public void ResetDashVelocity()
+        {
+            _dashVelocity = Vector3.zero;
+        }
+        
+        public void ApplyDashDrag(float drag, float deltaTime)
+        {
+            _dashVelocity.x /= 1 + drag * deltaTime;
+            _dashVelocity.z /= 1 + drag * deltaTime;
+        }
+        
     }
 }

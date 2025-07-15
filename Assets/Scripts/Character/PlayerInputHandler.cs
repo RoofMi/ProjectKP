@@ -1,108 +1,127 @@
-using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using ProjectKP.Actions;
 
 namespace Character
 {
     public class PlayerInputHandler : MonoBehaviour
     {
-        private CharacterStateMachine _stateMachine;
-        private InputBuffer _inputBuffer;
-        
-        private InputAction _moveAction;
-        private InputAction _jumpAction;
-        private InputAction _dashAction;
-        private InputAction _qAction;
-        private InputAction _eAction;
-        private InputAction _rAction;
-        private InputAction _lightAttackAction;
-        private InputAction _heavyAttackAction;
+        [Header("Components")]
+        [SerializeField] private ActionController _actionController;
 
-        public void Init(CharacterStateMachine stateMachine, InputBuffer inputBuffer)
+        [SerializeField] private CharacterMovement _movement;
+        [SerializeField] private Animator _animator;
+        
+        [Header("Actions")]
+        [SerializeField] private JumpAction _jumpAction;
+        [SerializeField] private DashAction _dashAction;
+        
+        private PlayerInput _playerInput;
+        private InputAction _moveInput;
+        private InputAction _jumpInput;
+        private InputAction _dashInput;
+        
+        private Vector2 _currentMoveInput;
+        
+        private void Awake()
         {
-            _stateMachine = stateMachine;
-            _inputBuffer = inputBuffer;
+            if (_actionController == null)
+                _actionController = GetComponent<ActionController>();
+            if (_movement == null)
+                _movement = GetComponent<CharacterMovement>();
+            if (_animator == null)
+                _animator = GetComponent<Animator>();
+            
+            _playerInput = GetComponent<PlayerInput>();
         }
         
         private void OnEnable()
         {
-            var playerInput = GetComponent<PlayerInput>();
-            var actionMap = playerInput.currentActionMap;
-
-            _moveAction = actionMap.FindAction("Move");
-            _jumpAction = actionMap.FindAction("Jump");
-            _dashAction = actionMap.FindAction("Dash");
-            _qAction = actionMap.FindAction("Q");
-            _eAction = actionMap.FindAction("E");
-            _rAction = actionMap.FindAction("R");
-            _lightAttackAction = actionMap.FindAction("LightAttack");
-            _heavyAttackAction = actionMap.FindAction("HeavyAttack");
+            var actionMap = _playerInput.currentActionMap;
             
-            _moveAction.Enable();
-            _jumpAction.Enable();
-            _dashAction.Enable();
-            _qAction.Enable();
-            _eAction.Enable();
-            _rAction.Enable();
-            _lightAttackAction.Enable();
-            _heavyAttackAction.Enable();
-
-            _jumpAction.performed += OnJumpPerformed;
-            _dashAction.performed += OnDashPerformed;
-            _qAction.performed += OnComboPerformed;
-            _eAction.performed += OnComboPerformed;
-            _rAction.performed += OnComboPerformed;
-            _lightAttackAction.performed += OnComboPerformed;
-            _heavyAttackAction.performed += OnComboPerformed;
-        }
-
-        private void Update()
-        {
-            Vector2 moveInput = _moveAction.ReadValue<Vector2>();
-            _stateMachine.OnMoveInput(moveInput);
+            _moveInput = actionMap.FindAction("Move");
+            _jumpInput = actionMap.FindAction("Jump");
+            _dashInput = actionMap.FindAction("Dash");
             
-            _inputBuffer.UpdateBuffer();
+            _moveInput.Enable();
+            _jumpInput.Enable();
+            _dashInput.Enable();
+            
+            _moveInput.performed += OnMove;
+            _moveInput.canceled += OnMove;
+            _jumpInput.performed += OnJump;
+            _dashInput.performed += OnDash;
         }
-
+        
         private void OnDisable()
         {
-            _jumpAction.performed -= OnJumpPerformed;
-            _dashAction.performed -= OnDashPerformed;
-            _qAction.performed -= OnComboPerformed;
-            _eAction.performed -= OnComboPerformed;
-            _rAction.performed -= OnComboPerformed;
-            _lightAttackAction.performed -= OnComboPerformed;
-            _heavyAttackAction.performed -= OnComboPerformed;
-
-            _moveAction.Disable();
-            _jumpAction.Disable();
-            _dashAction.Disable();
-            _qAction.Disable();
-            _eAction.Disable();
-            _rAction.Disable();
-            _lightAttackAction.Disable();
-            _heavyAttackAction.Disable();
+            _moveInput.performed -= OnMove;
+            _moveInput.canceled -= OnMove;
+            _jumpInput.performed -= OnJump;
+            _dashInput.performed -= OnDash;
+            
+            _moveInput.Disable();
+            _jumpInput.Disable();
+            _dashInput.Disable();
         }
         
-        private void OnJumpPerformed(InputAction.CallbackContext context)
+        private void Update()
         {
-            _stateMachine.TryJump();
+            if (!_actionController.HasTag("Dashing"))
+            {
+                _movement.UpdateRotation(Time.deltaTime);
+            }
+            
+            UpdateGroundedState();
+            UpdateAnimationParameters();
         }
         
-        private void OnDashPerformed(InputAction.CallbackContext context)
+        private void UpdateGroundedState()
         {
-            _stateMachine.TryDash();
+            if (_movement.IsGrounded())
+            {
+                if (!_actionController.HasTag("Grounded"))
+                {
+                    _actionController.AddTag("Grounded");
+                    _actionController.RemoveTag("Airborne");
+                    _actionController.RemoveTag("AirDashUsed");
+                }
+            }
+            else
+            {
+                if (!_actionController.HasTag("Airborne"))
+                {
+                    _actionController.RemoveTag("Grounded");
+                    _actionController.AddTag("Airborne");
+                }
+            }
         }
-
-        private void OnComboPerformed(InputAction.CallbackContext context)
+        
+        private void UpdateAnimationParameters()
         {
-            string actionName = context.action.name;
-            _inputBuffer.AddInput(actionName);
+            if (_animator == null) return;
+            
+            float inputMagnitude = _currentMoveInput.magnitude;
+            _animator.SetFloat(AnimationHashes.Speed, inputMagnitude);
+            _animator.SetBool(AnimationHashes.IsGrounded, _movement.IsGrounded());
         }
-
-        private void OnComboEnded()
+        
+        private void OnMove(InputAction.CallbackContext context)
         {
-            _inputBuffer.ClearAllInputs();
+            _currentMoveInput = context.ReadValue<Vector2>();
+            _movement.SetInput(_currentMoveInput);
+        }
+        
+        private void OnJump(InputAction.CallbackContext context)
+        {
+            if (_jumpAction != null)
+                _actionController.TryExecuteAction(_jumpAction);
+        }
+        
+        private void OnDash(InputAction.CallbackContext context)
+        {
+            if (_dashAction != null)
+                _actionController.TryExecuteAction(_dashAction, _currentMoveInput);
         }
     }
 }

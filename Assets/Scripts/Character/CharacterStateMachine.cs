@@ -107,10 +107,6 @@ namespace Character
                     _currentState = new JumpState(_context);
                     break;
                     
-                case StateType.Dash:
-                    _currentState = new DashState(_context, _currentMoveInput);
-                    break;
-                    
                 case StateType.Attack:
                     var comboNode = transition.TransitionData as RuntimeComboNode;
                     _currentState = new AttackState(_context, comboNode);

@@ -16,7 +16,6 @@ namespace Character
     {
         Move,
         Jump,
-        Dash,
         Attack
     }
 }

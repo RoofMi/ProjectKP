@@ -52,12 +52,6 @@ namespace Character
                     transition = new StateTransition(StateType.Jump);
                     break;
                     
-                case InputType.Dash:
-                    if (_moveInput.magnitude >= 0.1f)
-                    {
-                        transition = new StateTransition(StateType.Dash);
-                    }
-                    break;
             }
             
             return transition;
