@@ -908,6 +908,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e600bf10227ab144812d3fde72ebb51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _actionController: {fileID: 1575211798}
+  _comboAction: {fileID: 11400000, guid: 4884e7ca33348b84a8d57e1469fcefe2, type: 2}
 --- !u!4 &1575211781 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5930910215329468013, guid: 8e6d15b65f710984d896dad21e0197b4, type: 3}
@@ -941,7 +943,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16a558dcd7a5e9949966dd21994e6126, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxStamina: 100
+  maxStamina: 100000
   currentStamina: 0
   regenRate: 10
   regenDelay: 1
@@ -1003,6 +1005,7 @@ MonoBehaviour:
   _actionController: {fileID: 1575211798}
   _movement: {fileID: 1575211782}
   _animator: {fileID: 1575211783}
+  _comboManager: {fileID: 1575211780}
   _jumpAction: {fileID: 11400000, guid: 8f80e88fe5e028e45b407dd560f6f463, type: 2}
   _dashAction: {fileID: 11400000, guid: f4d3dae09178cb14c87e1fa302e5ad9a, type: 2}
 --- !u!114 &1575211798

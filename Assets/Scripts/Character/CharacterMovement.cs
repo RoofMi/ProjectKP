@@ -1,4 +1,5 @@
 using UnityEngine;
+using Actions;
 
 namespace Character
 {
@@ -26,13 +27,17 @@ namespace Character
         [SerializeField] private bool _gravityEnabled = true;
         
         private CharacterController _characterController;
+        private ActionController _actionController;
         
         private Vector3 _dashVelocity;
         private Vector2 _inputVector;
+        
+        public Vector2 GetInputDirection() => _inputVector;
 
         private void Awake()
         {
             _characterController = GetComponent<CharacterController>();
+            _actionController = GetComponent<ActionController>();
         }
         
         private void Update()
@@ -47,6 +52,8 @@ namespace Character
         
         public void UpdateMovement(Vector2 inputValue, float deltaTime)
         {
+            bool isAttacking = _actionController != null && _actionController.HasTag("Attacking");
+            
             if (_dashVelocity.magnitude > 0)
             {
                 if (IsGrounded())
@@ -75,7 +82,15 @@ namespace Character
             else
             {
                 Vector3 moveDirection = GetCameraAlignedDirection(inputValue);
-                _horizontalVelocity = moveDirection * MoveSpeed;
+                
+                if (!isAttacking)
+                {
+                    _horizontalVelocity = moveDirection * MoveSpeed;
+                }
+                else
+                {
+                    _horizontalVelocity = Vector3.zero;
+                }
 
                 if (IsGrounded())
                 {
@@ -123,6 +138,15 @@ namespace Character
                         RotationSpeed * deltaTime
                     );
                 }
+            }
+        }
+        
+        public void SetRotationToDirection(Vector3 direction)
+        {
+            direction.y = 0f;
+            if (direction.sqrMagnitude > 0.01f)
+            {
+                transform.rotation = Quaternion.LookRotation(direction, Vector3.up);
             }
         }
 

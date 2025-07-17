@@ -1,8 +1,8 @@
 using UnityEngine;
 
-namespace ProjectKP.Actions
+namespace Actions.Core
 {
-    public abstract class InstantAction : Action
+    public abstract class InstantAction : ActionBase
     {
         public override void Execute(GameObject owner)
         {

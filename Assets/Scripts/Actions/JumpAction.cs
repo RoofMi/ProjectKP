@@ -1,7 +1,8 @@
-using UnityEngine;
+using Actions.Core;
 using Character;
+using UnityEngine;
 
-namespace ProjectKP.Actions
+namespace Actions
 {
     [CreateAssetMenu(fileName = "JumpAction", menuName = "Actions/Movement/Jump")]
     public class JumpAction : InstantAction

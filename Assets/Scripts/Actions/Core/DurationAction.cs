@@ -1,16 +1,16 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 
-namespace ProjectKP.Actions
+namespace Actions.Core
 {
-    public abstract class DurationAction : Action
+    public abstract class DurationAction : ActionBase
     {
         public override void Execute(GameObject owner)
         {
             // ActionController will handle coroutine execution
         }
         
-        public abstract IEnumerator ExecuteOverTime(GameObject owner, object data = null);
+        public abstract IEnumerator ExecuteOverTime(GameObject owner, ActiveAction activeAction);
         
         public override bool CanExecute(GameObject owner)
         {

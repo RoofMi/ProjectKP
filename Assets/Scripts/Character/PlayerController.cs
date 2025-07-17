@@ -7,9 +7,7 @@ namespace Character
     {
         private CharacterMovement _movement;
         private PlayerInputHandler _inputHandler;
-        private CharacterStateMachine _stateMachine;
         private Animator _animator;
-        private InputBuffer _inputBuffer;
         private ComboManager _comboManager;
         private HealthComponent _health;
         private StaminaComponent _stamina;
@@ -24,17 +22,13 @@ namespace Character
             _comboManager = GetComponent<ComboManager>();
             _health = GetComponent<HealthComponent>();
             _stamina = GetComponent<StaminaComponent>();
-
-            _inputBuffer = new InputBuffer();
-            
-            _stateMachine = new CharacterStateMachine(_movement, _animator, _inputBuffer, _comboManager, _stamina);
             
             _inputHandler = GetComponent<PlayerInputHandler>();
         }
 
         private void Update()
         {
-            // _stateMachine.OnUpdate();
+            // Action 시스템이 모든 것을 처리
         }
 
     }

@@ -1,8 +1,9 @@
-using UnityEngine;
 using System.Collections;
+using Actions.Core;
 using Character;
+using UnityEngine;
 
-namespace ProjectKP.Actions
+namespace Actions
 {
     [CreateAssetMenu(fileName = "DashAction", menuName = "Actions/Movement/Dash")]
     public class DashAction : DurationAction
@@ -46,7 +47,7 @@ namespace ProjectKP.Actions
             return true;
         }
         
-        public override IEnumerator ExecuteOverTime(GameObject owner, object data = null)
+        public override IEnumerator ExecuteOverTime(GameObject owner, ActiveAction activeAction)
         {
             var controller = owner.GetComponent<ActionController>();
             var movement = owner.GetComponent<CharacterMovement>();
@@ -63,7 +64,7 @@ namespace ProjectKP.Actions
             controller.AddTag("Dashing");
             animator.SetTrigger(AnimationHashes.DashStart);
             
-            Vector2 dashDirection = data as Vector2? ?? new Vector2(0, 0);
+            Vector2 dashDirection = activeAction.Data as Vector2? ?? new Vector2(0, 0);
             if (dashDirection.magnitude < 0.1f)
             {
                 Vector3 forward = owner.transform.forward;

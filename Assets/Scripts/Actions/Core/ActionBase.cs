@@ -1,9 +1,9 @@
-using UnityEngine;
 using Character;
+using UnityEngine;
 
-namespace ProjectKP.Actions
+namespace Actions.Core
 {
-    public abstract class Action : ScriptableObject
+    public abstract class ActionBase : ScriptableObject
     {
         [Header("Basic Info")]
         public string actionName;
@@ -21,23 +21,19 @@ namespace ProjectKP.Actions
         public string[] requiredTags;
         public string[] blockingTags;
         
-        // Core methods
         public abstract bool CanExecute(GameObject owner);
         public abstract void Execute(GameObject owner);
         
-        // Optional override
-        public virtual bool CanBeCancelledBy(Action other)
+        public virtual bool CanBeCancelledBy(ActionBase other)
         {
             return other.priority > this.priority;
         }
         
-        // Helper method for tag checking
         protected bool CheckTags(GameObject owner)
         {
             var controller = owner.GetComponent<ActionController>();
             if (controller == null) return false;
             
-            // Check required tags
             if (requiredTags != null)
             {
                 foreach (var tag in requiredTags)
@@ -47,7 +43,6 @@ namespace ProjectKP.Actions
                 }
             }
             
-            // Check blocking tags
             if (blockingTags != null)
             {
                 foreach (var tag in blockingTags)
@@ -60,7 +55,6 @@ namespace ProjectKP.Actions
             return true;
         }
         
-        // Helper method for stamina check
         protected bool CheckStamina(GameObject owner)
         {
             if (staminaCost <= 0) return true;

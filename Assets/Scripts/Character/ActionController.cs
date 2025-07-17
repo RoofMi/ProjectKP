@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using Actions.Core;
 using UnityEngine;
-using ProjectKP.Actions;
 
 namespace Character
 {
@@ -27,7 +27,7 @@ namespace Character
             if (_stamina == null) _stamina = GetComponent<StaminaComponent>();
         }
         
-        public bool TryExecuteAction(Action action, object data = null)
+        public bool TryExecuteAction(ActionBase action, object data = null)
         {
             if (action == null || !action.CanExecute(gameObject))
                 return false;
@@ -43,12 +43,13 @@ namespace Character
                 StopAction(sameType);
             }
             
-            if (action.staminaCost > 0)
+            if (action.staminaCost > 0 && !(action is Actions.ComboAction))
             {
                 _stamina.UseStamina(action.staminaCost);
             }
+            Vector2 inputDirection = _movement != null ? _movement.GetInputDirection() : Vector2.zero;
             
-            var active = new ActiveAction(action, data);
+            var active = new ActiveAction(action, data, inputDirection);
             _activeActions.Add(active);
             
             action.Execute(gameObject);
@@ -67,7 +68,13 @@ namespace Character
         
         private IEnumerator RunDurationAction(ActiveAction active, DurationAction action)
         {
-            yield return action.ExecuteOverTime(gameObject, active.Data);
+            active.Coroutine = StartCoroutine(RunDurationActionInternal(active, action));
+            yield break;
+        }
+        
+        private IEnumerator RunDurationActionInternal(ActiveAction active, DurationAction action)
+        {
+            yield return action.ExecuteOverTime(gameObject, active);
             _activeActions.Remove(active);
         }
         
@@ -99,20 +106,5 @@ namespace Character
             return _activeActions.Exists(a => a.Action.GetType() == actionType);
         }
         
-        [System.Serializable]
-        private class ActiveAction
-        {
-            public Action Action;
-            public object Data;
-            public float StartTime;
-            public Coroutine Coroutine;
-            
-            public ActiveAction(Action action, object data)
-            {
-                Action = action;
-                Data = data;
-                StartTime = Time.time;
-            }
-        }
     }
 }
