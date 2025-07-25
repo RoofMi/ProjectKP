@@ -29,6 +29,11 @@ namespace Actions.Core
             return other.priority > this.priority;
         }
         
+        public virtual bool ShouldUseStamina()
+        {
+            return true;
+        }
+        
         protected bool CheckTags(GameObject owner)
         {
             var controller = owner.GetComponent<ActionController>();

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Actions.Core;
+using Character.Core;
 using UnityEngine;
 
 namespace Character
@@ -14,7 +15,7 @@ namespace Character
         
         [Header("Debug")]
         [SerializeField] private List<ActiveAction> _activeActions = new();
-        [SerializeField] private List<string> _currentTags = new() { "Grounded" };
+        [SerializeField] private List<string> _currentTags = new() { ActionTags.Grounded };
         
         private HashSet<string> _tags;
         
@@ -43,7 +44,7 @@ namespace Character
                 StopAction(sameType);
             }
             
-            if (action.staminaCost > 0 && !(action is Actions.ComboAction))
+            if (action.ShouldUseStamina() && action.staminaCost > 0)
             {
                 _stamina.UseStamina(action.staminaCost);
             }

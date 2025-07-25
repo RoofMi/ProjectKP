@@ -1,5 +1,6 @@
 using Actions.Core;
 using Character;
+using Character.Core;
 using UnityEngine;
 
 namespace Actions
@@ -14,7 +15,7 @@ namespace Actions
             cooldown = 0f;
             priority = 20;
             staminaCost = 10f;
-            requiredTags = new string[] { "Grounded" };
+            requiredTags = new string[] { ActionTags.Grounded };
             blockingTags = new string[] { "Stunned" };
         }
         
@@ -25,7 +26,7 @@ namespace Actions
                 
             var controller = owner.GetComponent<ActionController>();
             
-            return controller.HasTag("Grounded");
+            return controller.HasTag(ActionTags.Grounded);
         }
         
         protected override void OnExecute(GameObject owner)
@@ -38,8 +39,8 @@ namespace Actions
             animator.SetTrigger(AnimationHashes.Jump);
             animator.SetBool(AnimationHashes.IsGrounded, false);
             
-            controller.RemoveTag("Grounded");
-            controller.AddTag("Airborne");
+            controller.RemoveTag(ActionTags.Grounded);
+            controller.AddTag(ActionTags.Airborne);
         }
     }
 }

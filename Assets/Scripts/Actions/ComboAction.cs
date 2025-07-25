@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using Actions.Core;
 using Character;
+using Character.Core;
 using Combat;
 
 namespace Actions
@@ -32,7 +33,7 @@ namespace Actions
                 yield break;
             }
             
-            actionController.AddTag("Attacking");
+            actionController.AddTag(ActionTags.Attacking);
             _isInComboWindow = false;
             var movement = owner.GetComponent<CharacterMovement>();
             if (movement != null && activeAction.InputDirection.sqrMagnitude > 0.01f)
@@ -87,9 +88,9 @@ namespace Actions
                 
                 yield return null;
             }
-            actionController.RemoveTag("Attacking");
+            actionController.RemoveTag(ActionTags.Attacking);
             comboManager.SetComboWindow(false);
-            animator.CrossFade("Idle/Run", crossFadeDuration);
+            animator.CrossFade(AnimationStates.IdleRun, crossFadeDuration);
         }
         
         public override bool CanExecute(GameObject owner)
@@ -104,6 +105,11 @@ namespace Actions
                 return _isInComboWindow;
             }
             return base.CanBeCancelledBy(other);
+        }
+        
+        public override bool ShouldUseStamina()
+        {
+            return false;
         }
     }
 }

@@ -1,6 +1,7 @@
 using System.Collections;
 using Actions.Core;
 using Character;
+using Character.Core;
 using UnityEngine;
 
 namespace Actions
@@ -21,7 +22,7 @@ namespace Actions
             priority = 30;
             staminaCost = 20f;
             requiredTags = null;
-            blockingTags = new string[] { "Stunned", "Dashing" };
+            blockingTags = new string[] { ActionTags.Stunned, ActionTags.Dashing };
             
             dashSpeed = 20f;
             dashDuration = 0.3f;
@@ -41,7 +42,7 @@ namespace Actions
             if (controller.HasTag("Stunned"))
                 return false;
             
-            if (controller.HasTag("Airborne") && controller.HasTag("AirDashUsed"))
+            if (controller.HasTag(ActionTags.Airborne) && controller.HasTag(ActionTags.AirDashUsed))
                 return false;
             
             return true;
@@ -53,7 +54,7 @@ namespace Actions
             var movement = owner.GetComponent<CharacterMovement>();
             var animator = owner.GetComponent<Animator>();
             
-            bool isAirDash = controller.HasTag("Airborne");
+            bool isAirDash = controller.HasTag(ActionTags.Airborne);
             
             if (isAirDash)
             {
@@ -61,7 +62,7 @@ namespace Actions
                 movement.SetGravityEnabled(false);
             }
             
-            controller.AddTag("Dashing");
+            controller.AddTag(ActionTags.Dashing);
             animator.SetTrigger(AnimationHashes.DashStart);
             
             Vector2 dashDirection = activeAction.Data as Vector2? ?? new Vector2(0, 0);
@@ -103,7 +104,7 @@ namespace Actions
             
             movement.ResetDashVelocity();
             
-            controller.RemoveTag("Dashing");
+            controller.RemoveTag(ActionTags.Dashing);
             animator.SetTrigger(AnimationHashes.DashEnd);
             
             if (isAirDash)

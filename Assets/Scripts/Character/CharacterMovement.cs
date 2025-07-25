@@ -1,5 +1,6 @@
 using UnityEngine;
 using Actions;
+using Character.Core;
 
 namespace Character
 {
@@ -52,7 +53,7 @@ namespace Character
         
         public void UpdateMovement(Vector2 inputValue, float deltaTime)
         {
-            bool isAttacking = _actionController != null && _actionController.HasTag("Attacking");
+            bool isAttacking = _actionController != null && _actionController.HasTag(ActionTags.Attacking);
             
             if (_dashVelocity.magnitude > 0)
             {

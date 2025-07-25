@@ -1,5 +1,6 @@
 using Actions;
 using Combat;
+using Character.Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -84,7 +85,7 @@ namespace Character
         
         private void Update()
         {
-            if (!_actionController.HasTag("Dashing"))
+            if (!_actionController.HasTag(ActionTags.Dashing))
             {
                 _movement.UpdateRotation(Time.deltaTime);
             }
@@ -98,19 +99,19 @@ namespace Character
         {
             if (_movement.IsGrounded())
             {
-                if (!_actionController.HasTag("Grounded"))
+                if (!_actionController.HasTag(ActionTags.Grounded))
                 {
-                    _actionController.AddTag("Grounded");
-                    _actionController.RemoveTag("Airborne");
+                    _actionController.AddTag(ActionTags.Grounded);
+                    _actionController.RemoveTag(ActionTags.Airborne);
                     _actionController.RemoveTag("AirDashUsed");
                 }
             }
             else
             {
-                if (!_actionController.HasTag("Airborne"))
+                if (!_actionController.HasTag(ActionTags.Airborne))
                 {
-                    _actionController.RemoveTag("Grounded");
-                    _actionController.AddTag("Airborne");
+                    _actionController.RemoveTag(ActionTags.Grounded);
+                    _actionController.AddTag(ActionTags.Airborne);
                 }
             }
         }
@@ -166,8 +167,8 @@ namespace Character
             _inputBuffer.UpdateBuffer();
             if (_inputBuffer.HasInput())
             {
-                bool canStartNewCombo = !_actionController.HasTag("Attacking");
-                bool canContinueCombo = _actionController.HasTag("Attacking") && _comboManager.IsInComboWindow;
+                bool canStartNewCombo = !_actionController.HasTag(ActionTags.Attacking);
+                bool canContinueCombo = _actionController.HasTag(ActionTags.Attacking) && _comboManager.IsInComboWindow;
                 
                 if (canStartNewCombo || canContinueCombo)
                 {
