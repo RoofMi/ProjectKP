@@ -791,6 +791,22 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 3424386447155530401, guid: 8e6d15b65f710984d896dad21e0197b4, type: 3}
+      propertyPath: gravity
+      value: 18
+      objectReference: {fileID: 0}
+    - target: {fileID: 3424386447155530401, guid: 8e6d15b65f710984d896dad21e0197b4, type: 3}
+      propertyPath: dashSpeed
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 3424386447155530401, guid: 8e6d15b65f710984d896dad21e0197b4, type: 3}
+      propertyPath: jumpPower
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3424386447155530401, guid: 8e6d15b65f710984d896dad21e0197b4, type: 3}
+      propertyPath: dashDuration
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 3424386447155530401, guid: 8e6d15b65f710984d896dad21e0197b4, type: 3}
       propertyPath: <MoveSpeed>k__BackingField
       value: 10
       objectReference: {fileID: 0}
@@ -798,6 +814,10 @@ PrefabInstance:
       propertyPath: <CameraTransform>k__BackingField
       value: 
       objectReference: {fileID: 1685271907}
+    - target: {fileID: 3889547308016801510, guid: 8e6d15b65f710984d896dad21e0197b4, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5081308932463215295, guid: 8e6d15b65f710984d896dad21e0197b4, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0
@@ -864,6 +884,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5939772538266692760, guid: 8e6d15b65f710984d896dad21e0197b4, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1575211796}
+    - targetCorrespondingSourceObject: {fileID: 5939772538266692760, guid: 8e6d15b65f710984d896dad21e0197b4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1575211798}
+    - targetCorrespondingSourceObject: {fileID: 5939772538266692760, guid: 8e6d15b65f710984d896dad21e0197b4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1575211797}
   m_SourcePrefab: {fileID: 100100000, guid: 8e6d15b65f710984d896dad21e0197b4, type: 3}
 --- !u!1 &1575211779 stripped
 GameObject:
@@ -882,9 +908,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e600bf10227ab144812d3fde72ebb51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _actionController: {fileID: 1575211798}
+  _comboAction: {fileID: 11400000, guid: 4884e7ca33348b84a8d57e1469fcefe2, type: 2}
 --- !u!4 &1575211781 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5930910215329468013, guid: 8e6d15b65f710984d896dad21e0197b4, type: 3}
+  m_PrefabInstance: {fileID: 1575211778}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1575211782 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3424386447155530401, guid: 8e6d15b65f710984d896dad21e0197b4, type: 3}
+  m_PrefabInstance: {fileID: 1575211778}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1575211779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac2ed04eb3ba375489bc7f14b145dd85, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!95 &1575211783 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 1473257925764810135, guid: 8e6d15b65f710984d896dad21e0197b4, type: 3}
   m_PrefabInstance: {fileID: 1575211778}
   m_PrefabAsset: {fileID: 0}
 --- !u!114 &1575211787
@@ -899,7 +943,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16a558dcd7a5e9949966dd21994e6126, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxStamina: 100
+  maxStamina: 100000
   currentStamina: 0
   regenRate: 10
   regenDelay: 1
@@ -946,6 +990,42 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _combatEventChannel: {fileID: 11400000, guid: 61d0f143d8bc67b47ae25c2cdc17880f, type: 2}
+--- !u!114 &1575211797
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1575211779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de9426aea5084a84790d6389d221720e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _actionController: {fileID: 1575211798}
+  _movement: {fileID: 1575211782}
+  _animator: {fileID: 1575211783}
+  _comboManager: {fileID: 1575211780}
+  _jumpAction: {fileID: 11400000, guid: 8f80e88fe5e028e45b407dd560f6f463, type: 2}
+  _dashAction: {fileID: 11400000, guid: f4d3dae09178cb14c87e1fa302e5ad9a, type: 2}
+--- !u!114 &1575211798
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1575211779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11d2423d1a3cbb0439dcdea6670b75a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _animator: {fileID: 1575211783}
+  _movement: {fileID: 1575211782}
+  _stamina: {fileID: 1575211787}
+  _activeActions: []
+  _currentTags:
+  - Grounded
 --- !u!1 &1637229300
 GameObject:
   m_ObjectHideFlags: 0

@@ -6,22 +6,38 @@ namespace Character
 {
     public class InputBuffer
     {
-        private const float _bufferTime = 0.5f; // 연타 입력을 위해 버퍼 시간 증가
+        // 상수로 명시적 선언
+        private const float BUFFER_TIME_SECONDS = 0.5f;
+        
+        // 명확한 타입 정의
+        private struct BufferedInput
+        {
+            public string InputName { get; }
+            public float Timestamp { get; }
+            
+            public BufferedInput(string inputName, float timestamp)
+            {
+                InputName = inputName;
+                Timestamp = timestamp;
+            }
+        }
 
-        private Queue<(string inputName, float timeStamp)> _inputQueue = new Queue<(string, float)>();
+        private readonly Queue<BufferedInput> _inputQueue = new Queue<BufferedInput>();
 
         public void AddInput(string inputName)
         {
-            _inputQueue.Enqueue((inputName, Time.time));
+            _inputQueue.Enqueue(new BufferedInput(inputName, Time.time));
         }
 
         public void UpdateBuffer()
         {
             float currentTime = Time.time;
+            
+            // 만료된 입력 제거
             while (_inputQueue.Count > 0)
             {
-                var (inputName, timeStamp) = _inputQueue.Peek();
-                if (currentTime - timeStamp > _bufferTime)
+                var oldestInput = _inputQueue.Peek();
+                if (IsInputExpired(oldestInput, currentTime))
                 {
                     _inputQueue.Dequeue();
                 }
@@ -31,13 +47,18 @@ namespace Character
                 }
             }
         }
+        
+        private bool IsInputExpired(BufferedInput input, float currentTime)
+        {
+            return currentTime - input.Timestamp > BUFFER_TIME_SECONDS;
+        }
 
         public string GetNextInput()
         {
             if (_inputQueue.Count > 0)
             {
-                var (inputName, _) = _inputQueue.Dequeue();
-                return inputName;
+                var bufferedInput = _inputQueue.Dequeue();
+                return bufferedInput.InputName;
             }
 
             return null;
