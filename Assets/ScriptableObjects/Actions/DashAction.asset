@@ -15,7 +15,7 @@ MonoBehaviour:
   actionName: Dash
   icon: {fileID: 0}
   description: Quick dash in movement direction
-  cooldown: 0.5
+  cooldown: 1
   priority: 30
   staminaCost: 0
   requiredTags: []
@@ -24,3 +24,4 @@ MonoBehaviour:
   - Dashing
   dashSpeed: 15
   dashDuration: 0.4
+  dashStartDelay: 0.1

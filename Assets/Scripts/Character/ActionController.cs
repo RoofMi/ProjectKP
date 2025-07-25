@@ -19,6 +19,7 @@ namespace Character
         
         private HashSet<string> _tags;
         private ActionContext _context;
+        private Dictionary<ActionBase, float> _cooldownEndTimes = new();
         
         private void Awake()
         {
@@ -36,6 +37,9 @@ namespace Character
         public bool TryExecuteAction(ActionBase action, object data = null)
         {
             if (action == null || !action.CanExecute(_context))
+                return false;
+            
+            if (IsActionOnCooldown(action))
                 return false;
             
             var sameType = _activeActions.Find(a => 
@@ -59,6 +63,11 @@ namespace Character
             _activeActions.Add(active);
             
             action.Execute(_context);
+            
+            if (action.cooldown > 0f)
+            {
+                _cooldownEndTimes[action] = Time.time + action.cooldown;
+            }
             
             if (action is DurationAction durationAction)
             {
@@ -110,6 +119,28 @@ namespace Character
         public bool IsActionActive(System.Type actionType)
         {
             return _activeActions.Exists(a => a.Action.GetType() == actionType);
+        }
+        
+        public bool IsActionOnCooldown(ActionBase action)
+        {
+            return _cooldownEndTimes.TryGetValue(action, out float endTime) && Time.time < endTime;
+        }
+        
+        public float GetCooldownRemaining(ActionBase action)
+        {
+            if (_cooldownEndTimes.TryGetValue(action, out float endTime))
+            {
+                return Mathf.Max(0f, endTime - Time.time);
+            }
+            return 0f;
+        }
+        
+        public float GetCooldownProgress(ActionBase action)
+        {
+            if (action.cooldown <= 0f) return 1f;
+            
+            float remaining = GetCooldownRemaining(action);
+            return 1f - (remaining / action.cooldown);
         }
         
     }
