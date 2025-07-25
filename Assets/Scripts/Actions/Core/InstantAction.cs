@@ -1,19 +1,20 @@
+using Character.Core;
 using UnityEngine;
 
 namespace Actions.Core
 {
     public abstract class InstantAction : ActionBase
     {
-        public override void Execute(GameObject owner)
+        public override void Execute(ActionContext context)
         {
-            OnExecute(owner);
+            OnExecute(context);
         }
         
-        protected abstract void OnExecute(GameObject owner);
+        protected abstract void OnExecute(ActionContext context);
         
-        public override bool CanExecute(GameObject owner)
+        public override bool CanExecute(ActionContext context)
         {
-            return CheckTags(owner) && CheckStamina(owner);
+            return CheckTags(context) && CheckStamina(context);
         }
     }
 }

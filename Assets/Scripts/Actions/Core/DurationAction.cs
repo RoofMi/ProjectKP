@@ -1,20 +1,21 @@
 using System.Collections;
+using Character.Core;
 using UnityEngine;
 
 namespace Actions.Core
 {
     public abstract class DurationAction : ActionBase
     {
-        public override void Execute(GameObject owner)
+        public override void Execute(ActionContext context)
         {
             // ActionController will handle coroutine execution
         }
         
-        public abstract IEnumerator ExecuteOverTime(GameObject owner, ActiveAction activeAction);
+        public abstract IEnumerator ExecuteOverTime(ActionContext context, ActiveAction activeAction);
         
-        public override bool CanExecute(GameObject owner)
+        public override bool CanExecute(ActionContext context)
         {
-            return CheckTags(owner) && CheckStamina(owner);
+            return CheckTags(context) && CheckStamina(context);
         }
     }
 }

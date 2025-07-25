@@ -18,6 +18,7 @@ namespace Character
         [SerializeField] private List<string> _currentTags = new() { ActionTags.Grounded };
         
         private HashSet<string> _tags;
+        private ActionContext _context;
         
         private void Awake()
         {
@@ -26,11 +27,15 @@ namespace Character
             if (_animator == null) _animator = GetComponent<Animator>();
             if (_movement == null) _movement = GetComponent<CharacterMovement>();
             if (_stamina == null) _stamina = GetComponent<StaminaComponent>();
+            
+            _context = new ActionContext(gameObject);
         }
+        
+        public ActionContext GetContext() => _context;
         
         public bool TryExecuteAction(ActionBase action, object data = null)
         {
-            if (action == null || !action.CanExecute(gameObject))
+            if (action == null || !action.CanExecute(_context))
                 return false;
             
             var sameType = _activeActions.Find(a => 
@@ -53,7 +58,7 @@ namespace Character
             var active = new ActiveAction(action, data, inputDirection);
             _activeActions.Add(active);
             
-            action.Execute(gameObject);
+            action.Execute(_context);
             
             if (action is DurationAction durationAction)
             {
@@ -75,7 +80,7 @@ namespace Character
         
         private IEnumerator RunDurationActionInternal(ActiveAction active, DurationAction action)
         {
-            yield return action.ExecuteOverTime(gameObject, active);
+            yield return action.ExecuteOverTime(_context, active);
             _activeActions.Remove(active);
         }
         

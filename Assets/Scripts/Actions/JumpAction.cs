@@ -16,31 +16,25 @@ namespace Actions
             priority = 20;
             staminaCost = 10f;
             requiredTags = new string[] { ActionTags.Grounded };
-            blockingTags = new string[] { "Stunned" };
+            blockingTags = new string[] { ActionTags.Stunned };
         }
         
-        public override bool CanExecute(GameObject owner)
+        public override bool CanExecute(ActionContext context)
         {
-            if (!base.CanExecute(owner))
+            if (!base.CanExecute(context))
                 return false;
                 
-            var controller = owner.GetComponent<ActionController>();
-            
-            return controller.HasTag(ActionTags.Grounded);
+            return context.ActionController.HasTag(ActionTags.Grounded);
         }
         
-        protected override void OnExecute(GameObject owner)
+        protected override void OnExecute(ActionContext context)
         {
-            var movement = owner.GetComponent<CharacterMovement>();
-            var animator = owner.GetComponent<Animator>();
-            var controller = owner.GetComponent<ActionController>();
+            context.Movement.StartJump();
+            context.Animator.SetTrigger(AnimationHashes.Jump);
+            context.Animator.SetBool(AnimationHashes.IsGrounded, false);
             
-            movement.StartJump();
-            animator.SetTrigger(AnimationHashes.Jump);
-            animator.SetBool(AnimationHashes.IsGrounded, false);
-            
-            controller.RemoveTag(ActionTags.Grounded);
-            controller.AddTag(ActionTags.Airborne);
+            context.ActionController.RemoveTag(ActionTags.Grounded);
+            context.ActionController.AddTag(ActionTags.Airborne);
         }
     }
 }

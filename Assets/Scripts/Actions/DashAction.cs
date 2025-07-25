@@ -29,54 +29,48 @@ namespace Actions
             dashStartDelay = 0.1f;
         }
         
-        public override bool CanExecute(GameObject owner)
+        public override bool CanExecute(ActionContext context)
         {
-            if (!base.CanExecute(owner))
+            if (!base.CanExecute(context))
                 return false;
                 
-            var controller = owner.GetComponent<ActionController>();
-            
-            if (controller.IsActionActive(typeof(DashAction)))
+            if (context.ActionController.IsActionActive(typeof(DashAction)))
                 return false;
             
-            if (controller.HasTag("Stunned"))
+            if (context.ActionController.HasTag(ActionTags.Stunned))
                 return false;
             
-            if (controller.HasTag(ActionTags.Airborne) && controller.HasTag(ActionTags.AirDashUsed))
+            if (context.ActionController.HasTag(ActionTags.Airborne) && context.ActionController.HasTag(ActionTags.AirDashUsed))
                 return false;
             
             return true;
         }
         
-        public override IEnumerator ExecuteOverTime(GameObject owner, ActiveAction activeAction)
+        public override IEnumerator ExecuteOverTime(ActionContext context, ActiveAction activeAction)
         {
-            var controller = owner.GetComponent<ActionController>();
-            var movement = owner.GetComponent<CharacterMovement>();
-            var animator = owner.GetComponent<Animator>();
-            
-            bool isAirDash = controller.HasTag(ActionTags.Airborne);
+            bool isAirDash = context.ActionController.HasTag(ActionTags.Airborne);
             
             if (isAirDash)
             {
-                controller.AddTag("AirDashUsed");
-                movement.SetGravityEnabled(false);
+                context.ActionController.AddTag(ActionTags.AirDashUsed);
+                context.Movement.SetGravityEnabled(false);
             }
             
-            controller.AddTag(ActionTags.Dashing);
-            animator.SetTrigger(AnimationHashes.DashStart);
+            context.ActionController.AddTag(ActionTags.Dashing);
+            context.Animator.SetTrigger(AnimationHashes.DashStart);
             
             Vector2 dashDirection = activeAction.Data as Vector2? ?? new Vector2(0, 0);
             if (dashDirection.magnitude < 0.1f)
             {
-                Vector3 forward = owner.transform.forward;
+                Vector3 forward = context.Owner.transform.forward;
                 dashDirection = new Vector2(forward.x, forward.z).normalized;
             }
             
             Vector3 worldDashDirection = new Vector3(dashDirection.x, 0, dashDirection.y);
-            if (movement.CameraTransform != null)
+            if (context.Movement.CameraTransform != null)
             {
-                Vector3 camForward = movement.CameraTransform.forward;
-                Vector3 camRight = movement.CameraTransform.right;
+                Vector3 camForward = context.Movement.CameraTransform.forward;
+                Vector3 camRight = context.Movement.CameraTransform.right;
                 camForward.y = 0;
                 camRight.y = 0;
                 camForward.Normalize();
@@ -92,25 +86,25 @@ namespace Actions
             }
             
             Vector3 dashVelocity = worldDashDirection * dashSpeed;
-            movement.SetDashVelocity(dashVelocity);
+            context.Movement.SetDashVelocity(dashVelocity);
             
             while (elapsed < dashDuration)
             {
-                movement.UpdateRotation(Time.deltaTime, true);
+                context.Movement.UpdateRotation(Time.deltaTime, true);
                 
                 elapsed += Time.deltaTime;
                 yield return null;
             }
             
-            movement.ResetDashVelocity();
+            context.Movement.ResetDashVelocity();
             
-            controller.RemoveTag(ActionTags.Dashing);
-            animator.SetTrigger(AnimationHashes.DashEnd);
+            context.ActionController.RemoveTag(ActionTags.Dashing);
+            context.Animator.SetTrigger(AnimationHashes.DashEnd);
             
             if (isAirDash)
             {
-                movement.SetGravityEnabled(true);
-                movement.ResetVerticalVelocity();
+                context.Movement.SetGravityEnabled(true);
+                context.Movement.ResetVerticalVelocity();
             }
         }
     }

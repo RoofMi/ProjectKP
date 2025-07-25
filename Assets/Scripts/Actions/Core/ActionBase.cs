@@ -1,4 +1,5 @@
 using Character;
+using Character.Core;
 using UnityEngine;
 
 namespace Actions.Core
@@ -21,8 +22,8 @@ namespace Actions.Core
         public string[] requiredTags;
         public string[] blockingTags;
         
-        public abstract bool CanExecute(GameObject owner);
-        public abstract void Execute(GameObject owner);
+        public abstract bool CanExecute(ActionContext context);
+        public abstract void Execute(ActionContext context);
         
         public virtual bool CanBeCancelledBy(ActionBase other)
         {
@@ -34,16 +35,15 @@ namespace Actions.Core
             return true;
         }
         
-        protected bool CheckTags(GameObject owner)
+        protected bool CheckTags(ActionContext context)
         {
-            var controller = owner.GetComponent<ActionController>();
-            if (controller == null) return false;
+            if (context == null || !context.IsValid()) return false;
             
             if (requiredTags != null)
             {
                 foreach (var tag in requiredTags)
                 {
-                    if (!controller.HasTag(tag))
+                    if (!context.ActionController.HasTag(tag))
                         return false;
                 }
             }
@@ -52,7 +52,7 @@ namespace Actions.Core
             {
                 foreach (var tag in blockingTags)
                 {
-                    if (controller.HasTag(tag))
+                    if (context.ActionController.HasTag(tag))
                         return false;
                 }
             }
@@ -60,12 +60,11 @@ namespace Actions.Core
             return true;
         }
         
-        protected bool CheckStamina(GameObject owner)
+        protected bool CheckStamina(ActionContext context)
         {
             if (staminaCost <= 0) return true;
             
-            var stamina = owner.GetComponent<StaminaComponent>();
-            return stamina != null && stamina.CurrentStamina >= staminaCost;
+            return context.Stamina != null && context.Stamina.CurrentStamina >= staminaCost;
         }
     }
 }

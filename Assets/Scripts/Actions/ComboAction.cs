@@ -16,7 +16,7 @@ namespace Actions
         
         private bool _isInComboWindow;
         
-        public override IEnumerator ExecuteOverTime(GameObject owner, ActiveAction activeAction)
+        public override IEnumerator ExecuteOverTime(ActionContext context, ActiveAction activeAction)
         {
             var comboNode = activeAction.Data as RuntimeComboNode;
             if (comboNode == null || comboNode.StepNode?.AnimClip == null)
@@ -24,18 +24,14 @@ namespace Actions
                 yield break;
             }
             
-            var actionController = owner.GetComponent<ActionController>();
-            var comboManager = owner.GetComponent<ComboManager>();
-            var animator = owner.GetComponent<Animator>();
-            
-            if (actionController == null || comboManager == null || animator == null)
+            if (!context.HasAllComponents())
             {
                 yield break;
             }
             
-            actionController.AddTag(ActionTags.Attacking);
+            context.ActionController.AddTag(ActionTags.Attacking);
             _isInComboWindow = false;
-            var movement = owner.GetComponent<CharacterMovement>();
+            var movement = context.Movement;
             if (movement != null && activeAction.InputDirection.sqrMagnitude > 0.01f)
             {
                 Vector3 attackDirection = new Vector3(activeAction.InputDirection.x, 0f, activeAction.InputDirection.y);
@@ -44,14 +40,14 @@ namespace Actions
                 movement.SetRotationToDirection(attackDirection);
             }
             string animationName = comboNode.StepNode.AnimClip.name;
-            animator.CrossFade(animationName, crossFadeDuration);
+            context.Animator.CrossFade(animationName, crossFadeDuration);
             yield return new WaitForSeconds(crossFadeDuration);
             bool comboWindowActive = false;
             float elapsedTime = 0f;
             
             while (true)
             {
-                AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+                AnimatorStateInfo stateInfo = context.Animator.GetCurrentAnimatorStateInfo(0);
                 if (!stateInfo.IsName(animationName))
                 {
                     if (elapsedTime < crossFadeDuration + 0.1f)
@@ -73,13 +69,13 @@ namespace Actions
                 {
                     comboWindowActive = true;
                     _isInComboWindow = true;
-                    comboManager.SetComboWindow(true);
+                    context.ComboManager.SetComboWindow(true);
                 }
                 else if (!inWindow && comboWindowActive)
                 {
                     comboWindowActive = false;
                     _isInComboWindow = false;
-                    comboManager.SetComboWindow(false);
+                    context.ComboManager.SetComboWindow(false);
                 }
                 if (normalizedTime >= animationEndThreshold)
                 {
@@ -88,14 +84,14 @@ namespace Actions
                 
                 yield return null;
             }
-            actionController.RemoveTag(ActionTags.Attacking);
-            comboManager.SetComboWindow(false);
-            animator.CrossFade(AnimationStates.IdleRun, crossFadeDuration);
+            context.ActionController.RemoveTag(ActionTags.Attacking);
+            context.ComboManager.SetComboWindow(false);
+            context.Animator.CrossFade(AnimationStates.IdleRun, crossFadeDuration);
         }
         
-        public override bool CanExecute(GameObject owner)
+        public override bool CanExecute(ActionContext context)
         {
-            return CheckTags(owner);
+            return CheckTags(context);
         }
         
         public override bool CanBeCancelledBy(ActionBase other)
