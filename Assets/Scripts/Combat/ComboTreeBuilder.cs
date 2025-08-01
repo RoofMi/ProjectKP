@@ -7,11 +7,23 @@ namespace Combat
     {
         public static RuntimeComboTree BuildTree(IEnumerable<ComboDefinition> comboDefs)
         {
+            if (comboDefs == null)
+            {
+                Debug.LogError("ComboTreeBuilder: comboDefs is null");
+                return new RuntimeComboTree();
+            }
+            
             var tree = new RuntimeComboTree();
             var rootNode = tree.Root;
             
             foreach (var def in comboDefs)
             {
+                if (def == null || def.ComboSteps == null || def.ComboSteps.Count == 0)
+                {
+                    Debug.LogWarning($"ComboTreeBuilder: Invalid combo definition {def?.name}");
+                    continue;
+                }
+                
                 InsertCombo(def, rootNode);
             }
 
@@ -24,9 +36,11 @@ namespace Combat
             
             foreach (var stepRef in comboDef.ComboSteps)
             {
-                float dmg = (stepRef.OverrideDamage > 0) ? stepRef.OverrideDamage : stepRef.ComboNode.BaseDamage;
-                float wStart = (stepRef.OverrideWindowStart > 0) ? stepRef.OverrideWindowStart : stepRef.ComboNode.BaseWindowStart;
-                float wEnd = (stepRef.OverrideWindowEnd > 0) ? stepRef.OverrideWindowEnd : stepRef.ComboNode.BaseWindowEnd;
+                if (stepRef == null || stepRef.ComboNode == null)
+                {
+                    Debug.LogWarning($"ComboTreeBuilder: Invalid step reference in {comboDef.name}");
+                    continue;
+                }
                 
                 if (!current.Children.TryGetValue(stepRef.InputKey, out var childList))
                 {
@@ -34,12 +48,20 @@ namespace Combat
                     current.Children[stepRef.InputKey] = childList;
                 }
                 
-                var existingNode = childList.Find(n =>
-                    n.StepNode == stepRef.ComboNode &&
-                    Mathf.Approximately(n.Damage, dmg) &&
-                    Mathf.Approximately(n.WindowStart, wStart) &&
-                    Mathf.Approximately(n.WindowEnd, wEnd)
-                );
+                // 중복 노드 검사
+                RuntimeComboNode existingNode = null;
+                foreach (var node in childList)
+                {
+                    if (node.StepNode == stepRef.ComboNode &&
+                        node.Damage == stepRef.Damage &&
+                        node.WindowStart == stepRef.WindowStart &&
+                        node.WindowEnd == stepRef.WindowEnd &&
+                        node.StaminaCost == stepRef.StaminaCost)
+                    {
+                        existingNode = node;
+                        break;
+                    }
+                }
 
                 if (existingNode != null)
                 {
@@ -47,14 +69,8 @@ namespace Combat
                 }
                 else
                 {
-                    var newNode = new RuntimeComboNode
-                    {
-                        StepNode = stepRef.ComboNode,
-                        Damage = dmg,
-                        WindowStart = wStart,
-                        WindowEnd = wEnd,
-                        InputKey = stepRef.InputKey
-                    };
+                    // 새로운 생성자 사용
+                    var newNode = new RuntimeComboNode(stepRef);
                     childList.Add(newNode);
                     current = newNode;
                 }

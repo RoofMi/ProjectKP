@@ -45,7 +45,6 @@ GameObject:
   - component: {fileID: 3424386447155530401}
   - component: {fileID: 1473257925764810135}
   - component: {fileID: 7408508165476197142}
-  - component: {fileID: 3889547308016801510}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -119,13 +118,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac2ed04eb3ba375489bc7f14b145dd85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <MoveSpeed>k__BackingField: 20
-  <DashSpeed>k__BackingField: 45
-  <DashDuration>k__BackingField: 0.25
-  <JumpPower>k__BackingField: 5
-  <Gravity>k__BackingField: 9.81
-  <RotationSpeed>k__BackingField: 10
+  moveSpeed: 5
+  jumpPower: 5
+  gravity: 9.81
+  rotationSpeed: 10
   <CameraTransform>k__BackingField: {fileID: 0}
+  _gravityEnabled: 1
 --- !u!95 &1473257925764810135
 Animator:
   serializedVersion: 7
@@ -178,18 +176,6 @@ MonoBehaviour:
   m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
---- !u!114 &3889547308016801510
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5939772538266692760}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: de9426aea5084a84790d6389d221720e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &3733759345616280873
 PrefabInstance:
   m_ObjectHideFlags: 0
