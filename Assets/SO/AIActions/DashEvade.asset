@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a5f413f4125de649ac40c0e32613f0d, type: 3}
+  m_Name: DashEvade
+  m_EditorClassIdentifier: 
+  _targetTag: 
+  _consideration: {fileID: 11400000, guid: f5e595745b1c30c46b8e7eab7759616d, type: 2}
+  wrappedAction: {fileID: 11400000, guid: f4d3dae09178cb14c87e1fa302e5ad9a, type: 2}
+  invertDirection: 1

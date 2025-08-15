@@ -8,7 +8,7 @@ namespace AI
         public override void Init(AIContext context)
         {
         }
-
+        
         public override void Execute(AIContext context)
         {
             context.SetAgentDestinationToTarget();

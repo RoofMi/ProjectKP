@@ -14,20 +14,13 @@ namespace AI
         [SerializeField] private List<AIAction> _actions;
         private AIContext _context;
         private Animator _animator;
-        private CharacterStateMachine _stateMachine;
-            
-        // for test
-        private Health _health;
+        private HealthComponent _health;
 
         private void Awake()
         {
             _animator = GetComponent<Animator>();
-            
+            _health = GetComponent<HealthComponent>();
             _context = new AIContext(this, _playerCharacter);
-            _stateMachine = new CharacterStateMachine(_context, _animator, true);
-            
-            // for test
-            _health = GetComponent<Health>();
 
             foreach (var action in _actions)
             {
@@ -56,13 +49,16 @@ namespace AI
             {
                 bestAction.Execute(_context);
             }
-            
-            _stateMachine.OnUpdate();
         }
 
         private void UpdateContext()
         {
-            _context.SetData("health", _health.NormalizedHealth);
+            // health
+            _context.SetData("health", _health.HealthPercentage);
+            
+            // distance
+            float normalizedDistance = Mathf.Clamp01(Vector3.Distance(transform.position, _playerCharacter.position) / 20f);
+            _context.SetData("distanceToTarget", normalizedDistance);
         }
     }
 }

@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Character;
+using Combat;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
@@ -10,7 +12,9 @@ namespace AI
         private Transform _playerCharacter;
         private Transform _currentTarget;
         private AIBrain _brain;
-        public NavMeshAgent Agent;
+        private NavMeshAgent _agent;
+        private ActionController _actionController;
+        private ComboManager _comboManager;
 
         private readonly Dictionary<string, object> _data = new();
 
@@ -21,11 +25,19 @@ namespace AI
                 return;
             }
 
-            this._brain = brain;
-            this.Agent = brain.gameObject.GetOrAddComponent<NavMeshAgent>();
-            this._playerCharacter = playerCharacter;
-            this._currentTarget = playerCharacter;
+            _brain = brain;
+            _agent = brain.GetOrAddComponent<NavMeshAgent>();
+            _playerCharacter = playerCharacter;
+            _currentTarget = playerCharacter;
+            _actionController = brain.GetOrAddComponent<ActionController>();
+            _comboManager = brain.GetOrAddComponent<ComboManager>();
         }
+        
+        public AIBrain Brain => _brain;
+        public NavMeshAgent Agent => _agent;
+        public ActionController ActionController => _actionController;
+        public ComboManager ComboManager => _comboManager;
+        public Transform CurrentTarget => _currentTarget;
 
         public T GetData<T>(string key) => _data.TryGetValue(key, out var value) ? (T)value : default;
         public void SetData(string key, object value) => _data[key] = value;

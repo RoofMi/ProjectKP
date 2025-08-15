@@ -158,6 +158,14 @@ namespace Character
         
         private Vector3 GetCameraAlignedDirection(Vector2 inputValue)
         {
+            // AI 캐릭터는 카메라가 없으므로 체크
+            if (CameraTransform == null)
+            {
+                // AI는 NavMeshAgent로 이동하므로 이 메소드가 호출되면 안 됨
+                // 혹시 호출되면 Zero 반환
+                return Vector3.zero;
+            }
+            
             Vector3 camForward = CameraTransform.forward;
             Vector3 camRight   = CameraTransform.right;
 
