@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9861695ac56e2ad45b3a94d0a79c7ca5, type: 3}
+  m_Name: TestCombo1
+  m_EditorClassIdentifier: 
+  ComboName: QWER
+  ComboSteps:
+  - ComboNode: {fileID: 11400000, guid: 7a9a368c18f0c1d45a6e39057eb77e0c, type: 2}
+    InputKey: LightAttack
+    Damage: 10
+    WindowStart: 0.5
+    WindowEnd: 0.9
+    StaminaCost: 10
+  - ComboNode: {fileID: 11400000, guid: 834abeb4696af994ab3654ace8356e82, type: 2}
+    InputKey: LightAttack
+    Damage: 10
+    WindowStart: 0.5
+    WindowEnd: 0.9
+    StaminaCost: 10
+  - ComboNode: {fileID: 11400000, guid: 504c3c109f82bde4ebb602e030a2ea92, type: 2}
+    InputKey: LightAttack
+    Damage: 10
+    WindowStart: 0.5
+    WindowEnd: 0.9
+    StaminaCost: 10
+  - ComboNode: {fileID: 11400000, guid: 8f7dd54c67386864ebed8d8644481bd4, type: 2}
+    InputKey: LightAttack
+    Damage: 10
+    WindowStart: 0.5
+    WindowEnd: 0.9
+    StaminaCost: 10
