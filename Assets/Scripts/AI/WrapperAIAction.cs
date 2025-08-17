@@ -13,6 +13,9 @@ namespace AI
         [Tooltip("For dash actions: if true, dash away from target; if false, dash towards target")]
         [SerializeField] private bool invertDirection;
         
+        // Use wrapped action's priority if available
+        public override int Priority => wrappedAction != null ? wrappedAction.priority : base.Priority;
+        
         public override void Init(AIContext context)
         {
             

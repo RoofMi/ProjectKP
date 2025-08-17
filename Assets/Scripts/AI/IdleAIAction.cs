@@ -5,6 +5,11 @@ namespace AI
     [CreateAssetMenu(menuName = "UtilityAI/Actions/IdleAction")]
     public class IdleAIAction : AIAction
     {
+        private void Reset()
+        {
+            priority = 0;
+        }
+        
         public override void Init(AIContext context)
         {
         }

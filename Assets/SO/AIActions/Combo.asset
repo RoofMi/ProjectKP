@@ -9,16 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 93666a93e3b7ef049a1cfbf5e10457dc, type: 3}
-  m_Name: ComboAction
+  m_Script: {fileID: 11500000, guid: 5f86c5da8ab20da4db5a5bb67f128021, type: 3}
+  m_Name: Combo
   m_EditorClassIdentifier: 
-  actionName: 
-  icon: {fileID: 0}
-  description: 
-  cooldown: 0
-  priority: 10
-  staminaCost: 0
-  requiredTags: []
-  blockingTags: []
-  crossFadeDuration: 0.1
-  animationEndThreshold: 0.95
+  _targetTag: 
+  _consideration: {fileID: 0}
+  priority: 30
+  reactionTime: 0.2
+  comboContinueProbability: 0.7

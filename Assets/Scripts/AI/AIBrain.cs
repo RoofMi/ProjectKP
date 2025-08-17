@@ -10,11 +10,21 @@ namespace AI
     [RequireComponent(typeof(NavMeshAgent))]
     public class AIBrain : MonoBehaviour
     {
+        [Header("Target")]
         [SerializeField] private Transform _playerCharacter;
+        
+        [Header("Actions")]
         [SerializeField] private List<AIAction> _actions;
+        
+        [Header("Decision Making")]
+        [Tooltip("How often AI evaluates which action to take (in seconds)")]
+        [SerializeField] private float decisionInterval = 0.2f;
+        
         private AIContext _context;
         private Animator _animator;
         private HealthComponent _health;
+        private AIAction _currentAction;
+        private float _nextDecisionTime;
 
         private void Awake()
         {
@@ -31,7 +41,26 @@ namespace AI
         private void Update()
         {
             UpdateContext();
-
+            
+            _currentAction?.Execute(_context);
+            
+            // Evaluate new action periodically
+            if (Time.time >= _nextDecisionTime)
+            {
+                AIAction bestAction = SelectBestAction();
+                
+                if (bestAction != _currentAction)
+                {
+                    _currentAction = bestAction;
+                    Debug.Log($"[AI] Switched to action: {_currentAction?.name}");
+                }
+                
+                _nextDecisionTime = Time.time + decisionInterval;
+            }
+        }
+        
+        private AIAction SelectBestAction()
+        {
             AIAction bestAction = null;
             float highestUtility = float.MinValue;
 
@@ -44,11 +73,8 @@ namespace AI
                     bestAction = action;
                 }
             }
-
-            if (bestAction != null)
-            {
-                bestAction.Execute(_context);
-            }
+            
+            return bestAction;
         }
 
         private void UpdateContext()
