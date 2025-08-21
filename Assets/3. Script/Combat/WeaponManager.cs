@@ -48,8 +48,8 @@ namespace Combat
             if (weapon.WeaponPrefab != null && _weaponMount != null)
             {
                 _currentWeaponInstance = Instantiate(weapon.WeaponPrefab, _weaponMount);
-                _currentWeaponInstance.transform.localPosition = Vector3.zero;
-                _currentWeaponInstance.transform.localRotation = Quaternion.identity;
+                _currentWeaponInstance.transform.localPosition = new Vector3(0.1f, -0.03f, 0.01f);
+                _currentWeaponInstance.transform.localRotation = Quaternion.Euler(40f, -80f, -80f);
                 
                 
                 _hitboxes = _currentWeaponInstance.GetComponentsInChildren<Hitbox>(true);
