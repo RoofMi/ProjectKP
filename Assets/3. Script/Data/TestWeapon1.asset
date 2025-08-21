@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d580789b3202a34e9caed9cad63c110, type: 3}
   m_Name: TestWeapon1
   m_EditorClassIdentifier: 
-  WeaponPrefab: {fileID: 8135558105844486254, guid: 6f6db2c5be9800b4ba1833b4cefbcf29, type: 3}
+  WeaponPrefab: {fileID: 1830759431208322628, guid: 6f6db2c5be9800b4ba1833b4cefbcf29, type: 3}
   BaseDamage: 10
   Combos:
   - {fileID: 11400000, guid: 593631314bbac8e448428249fc865d5c, type: 2}

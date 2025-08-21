@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Combat.Interfaces;
 using Combat.Events;
 using UnityEngine;
-using UnityEngine.Android;
 
 namespace Combat
 {
