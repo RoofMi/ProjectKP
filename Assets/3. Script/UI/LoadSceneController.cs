@@ -35,6 +35,7 @@ public class LoadSceneController : MonoBehaviour
 
        StartCoroutine(LoadSceneProgress());
     }
+
     private IEnumerator LoadSceneProgress()
     {
         _progressBar.fillAmount = 0.0f;
