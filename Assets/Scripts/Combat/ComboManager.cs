@@ -13,6 +13,7 @@ namespace Combat
         private RuntimeComboNode _currentNode;
         private bool _isInComboWindow;
         private float _lastAttackTime;
+        private int _comboDepth = 0; // 현재 콤보 깊이 추적
         private const float COMBO_TIMEOUT = 1.0f; // 콤보 타임아웃 시간
         
         // 의존성
@@ -113,6 +114,7 @@ namespace Combat
                 {
                     _currentNode = targetNode;
                     _lastAttackTime = Time.time;
+                    _comboDepth++;
                 }
                 
                 return result;
@@ -142,6 +144,7 @@ namespace Combat
         {
             _currentNode = null;
             _isInComboWindow = false;
+            _comboDepth = 0;
         }
         
         // 콤보가 실제로 끊겼을 때 (타임아웃, 다른 액션 등) 호출
@@ -149,6 +152,17 @@ namespace Combat
         {
             _currentNode = null;
             _isInComboWindow = false;
+            _comboDepth = 0;
+        }
+
+        public bool IsInCombo()
+        {
+            return _currentNode != null;
+        }
+        
+        public int GetComboDepth()
+        {
+            return _comboDepth;
         }
     }
 }
