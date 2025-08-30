@@ -36,11 +36,24 @@ namespace Character
         
         public bool TryExecuteAction(ActionBase action, object data = null)
         {
-            if (action == null || !action.CanExecute(_context))
+            
+            if (action == null)
+            {
+                Debug.LogWarning("[ActionController] Action is null!");
                 return false;
+            }
+            
+            if (!action.CanExecute(_context))
+            {
+                Debug.LogWarning($"[ActionController] CanExecute returned false for {action.name}");
+                return false;
+            }
             
             if (IsActionOnCooldown(action))
+            {
+                Debug.LogWarning($"[ActionController] Action {action.name} is on cooldown!");
                 return false;
+            }
             
             var sameType = _activeActions.Find(a => 
                 a.Action.GetType() == action.GetType());

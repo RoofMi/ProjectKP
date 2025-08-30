@@ -18,29 +18,49 @@ namespace Actions
         
         public override IEnumerator ExecuteOverTime(ActionContext context, ActiveAction activeAction)
         {
+            
             var comboNode = activeAction.Data as RuntimeComboNode;
             if (comboNode == null || comboNode.StepNode?.AnimClip == null)
             {
+                Debug.LogError($"[ComboAction] Invalid combo node! Node: {comboNode != null}, StepNode: {comboNode?.StepNode != null}, AnimClip: {comboNode?.StepNode?.AnimClip != null}");
                 yield break;
             }
             
             if (!context.HasAllComponents())
             {
+                Debug.LogError("[ComboAction] Missing required components!");
                 yield break;
             }
             
             context.ActionController.AddTag(ActionTags.Attacking);
             _isInComboWindow = false;
             var movement = context.Movement;
+            
             if (movement != null && activeAction.InputDirection.sqrMagnitude > 0.01f)
             {
                 Vector3 attackDirection = new Vector3(activeAction.InputDirection.x, 0f, activeAction.InputDirection.y);
-                attackDirection = movement.CameraTransform.TransformDirection(attackDirection);
+                
+                if (movement.CameraTransform != null)
+                {
+                    attackDirection = movement.CameraTransform.TransformDirection(attackDirection);
+                }
+                else
+                {
+                    Debug.LogWarning("[ComboAction] CameraTransform is null! Using world direction.");
+                }
+                
                 attackDirection.y = 0f;
                 movement.SetRotationToDirection(attackDirection);
             }
+            else
+            {
+            }
             string animationName = comboNode.StepNode.AnimClip.name;
-            context.Animator.CrossFade(animationName, crossFadeDuration);
+            
+            // Animator 상태 확인
+            
+            context.Animator.CrossFadeInFixedTime(animationName, crossFadeDuration);
+            
             yield return new WaitForSeconds(crossFadeDuration);
             bool comboWindowActive = false;
             float elapsedTime = 0f;
@@ -48,6 +68,19 @@ namespace Actions
             while (true)
             {
                 AnimatorStateInfo stateInfo = context.Animator.GetCurrentAnimatorStateInfo(0);
+                
+                // 현재 상태 이름을 가져오는 디버그 코드
+                int currentStateHash = stateInfo.fullPathHash;
+                string currentStateName = "Unknown";
+                foreach (var clipInfo in context.Animator.GetCurrentAnimatorClipInfo(0))
+                {
+                    if (clipInfo.clip != null)
+                    {
+                        currentStateName = clipInfo.clip.name;
+                        break;
+                    }
+                }
+                
                 if (!stateInfo.IsName(animationName))
                 {
                     if (elapsedTime < crossFadeDuration + 0.1f)
@@ -58,6 +91,7 @@ namespace Actions
                     }
                     else
                     {
+                        Debug.LogError($"[ComboAction] Animation never started! Expected: {animationName}, Current: {currentStateName}");
                         break;
                     }
                 }
@@ -86,7 +120,7 @@ namespace Actions
             }
             context.ActionController.RemoveTag(ActionTags.Attacking);
             context.ComboManager.SetComboWindow(false);
-            context.Animator.CrossFade(AnimationStates.IdleRun, crossFadeDuration);
+            context.Animator.CrossFadeInFixedTime(AnimationStates.IdleRun, crossFadeDuration);
         }
         
         public override bool CanExecute(ActionContext context)

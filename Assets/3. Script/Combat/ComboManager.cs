@@ -73,8 +73,10 @@ namespace Combat
         // 콤보 실행 시도
         public bool TryExecuteCombo(string inputKey)
         {
+            
             if (_actionController == null || _comboAction == null)
             {
+                Debug.LogWarning($"[ComboManager] Missing components - ActionController: {_actionController != null}, ComboAction: {_comboAction != null}");
                 return false;
             }
 
@@ -99,10 +101,12 @@ namespace Combat
             // 실행 가능한 노드가 있으면 AttackAction 실행
             if (targetNode != null)
             {
+                
                 // 스태미나 체크 및 사용
                 var staminaComponent = GetComponent<StaminaComponent>();
                 if (staminaComponent != null && !staminaComponent.TryUseStamina(targetNode.StaminaCost))
                 {
+                    Debug.LogWarning("[ComboManager] Not enough stamina!");
                     return false;
                 }
                 
@@ -114,6 +118,10 @@ namespace Combat
                     _currentNode = targetNode;
                     _lastAttackTime = Time.time;
                     _comboDepth++;
+                }
+                else
+                {
+                    Debug.LogWarning("[ComboManager] TryExecuteAction failed!");
                 }
                 
                 return result;
