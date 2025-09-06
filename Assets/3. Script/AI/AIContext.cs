@@ -75,7 +75,24 @@ namespace AI
 
         public T GetData<T>(string key) => _data.TryGetValue(key, out var value) ? (T)value : default;
         public void SetData(string key, object value) => _data[key] = value;
+        
+        // 타입 변환 없이 원본 데이터 반환
+        public object GetDataRaw(string key) => _data.TryGetValue(key, out var value) ? value : null;
+        
+        // 키 존재 여부 확인
+        public bool HasData(string key) => _data.ContainsKey(key);
 
         public void SetAgentDestinationToTarget() => Agent.SetDestination(_currentTarget.position);
+        
+        // 액션 쿨다운 체크 메서드
+        public bool IsActionOnCooldown(Actions.Core.ActionBase action)
+        {
+            return _actionController != null && _actionController.IsActionOnCooldown(action);
+        }
+        
+        public float GetActionCooldownRemaining(Actions.Core.ActionBase action)
+        {
+            return _actionController != null ? _actionController.GetCooldownRemaining(action) : 0f;
+        }
     }
 }

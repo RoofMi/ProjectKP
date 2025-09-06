@@ -18,7 +18,7 @@ namespace AI
         {
         }
 
-        public float CalculateUtility(AIContext context) => _consideration.Evaluate(context);
+        public virtual float CalculateUtility(AIContext context) => _consideration.Evaluate(context);
 
         public abstract void Execute(AIContext context);
     }
