@@ -9,9 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: faabd8c04df1ef445b73aa8bdd0e0155, type: 3}
-  m_Name: MoveToPlayer
+  m_Script: {fileID: 11500000, guid: d77081e85deec414d9bd350270afb13f, type: 3}
+  m_Name: EvadeAttack
   m_EditorClassIdentifier: 
-  _targetTag: 
-  _consideration: {fileID: 11400000, guid: 23f23615b1068ed499f2f6be2d66dfc8, type: 2}
-  priority: 10
+  _contextKey: targetAttacking
+  _comparison: 0
+  _threshold: 0.5
+  _trueBranch: {fileID: 11400000, guid: d57f82ca6ed41ec468cadf54860b3c19, type: 2}
+  _falseBranch: {fileID: 0}
+  _defaultValue: 0

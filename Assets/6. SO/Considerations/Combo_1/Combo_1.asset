@@ -9,9 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: faabd8c04df1ef445b73aa8bdd0e0155, type: 3}
-  m_Name: MoveToPlayer
+  m_Script: {fileID: 11500000, guid: 3146f95685be26e488de278cd7370dec, type: 3}
+  m_Name: Combo_1
   m_EditorClassIdentifier: 
-  _targetTag: 
-  _consideration: {fileID: 11400000, guid: 23f23615b1068ed499f2f6be2d66dfc8, type: 2}
-  priority: 10
+  _aggregationType: 0
+  _considerations:
+  - {fileID: 11400000, guid: 02fcd00b28c610a4c9a6677f76cd91b1, type: 2}
+  - {fileID: 11400000, guid: a1e5701365ab1e143a5fd2f080b1c726, type: 2}
+  _weights: []

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9861695ac56e2ad45b3a94d0a79c7ca5, type: 3}
   m_Name: TestCombo2
   m_EditorClassIdentifier: 
-  ComboName: QWEW
+  ComboName: LLLR
   ComboSteps:
   - ComboNode: {fileID: 11400000, guid: 7a9a368c18f0c1d45a6e39057eb77e0c, type: 2}
     InputKey: LightAttack

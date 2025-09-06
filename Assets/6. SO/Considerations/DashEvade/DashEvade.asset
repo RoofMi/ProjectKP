@@ -9,11 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2a5f413f4125de649ac40c0e32613f0d, type: 3}
+  m_Script: {fileID: 11500000, guid: 3146f95685be26e488de278cd7370dec, type: 3}
   m_Name: DashEvade
   m_EditorClassIdentifier: 
-  _targetTag: 
-  _consideration: {fileID: 11400000, guid: 8f331fb58ac466a40bd1cdd43849d2da, type: 2}
-  priority: 10
-  wrappedAction: {fileID: 11400000, guid: f4d3dae09178cb14c87e1fa302e5ad9a, type: 2}
-  invertDirection: 1
+  _aggregationType: 2
+  _considerations:
+  - {fileID: 11400000, guid: 86b993dc3a53f2844816dc722ce22ce7, type: 2}
+  - {fileID: 11400000, guid: 082807f053b340946b13b8c01f2fefe6, type: 2}
+  _weights: []

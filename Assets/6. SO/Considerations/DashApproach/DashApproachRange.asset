@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d77081e85deec414d9bd350270afb13f, type: 3}
+  m_Name: DashApproachRange
+  m_EditorClassIdentifier: 
+  _contextKey: distanceNormalized
+  _comparison: 0
+  _threshold: 0.4
+  _trueBranch: {fileID: 11400000, guid: 831ed96c078d1a44198cd345885cf2b1, type: 2}
+  _falseBranch: {fileID: 0}
+  _defaultValue: 0

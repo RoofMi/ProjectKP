@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: DashApproach
   m_EditorClassIdentifier: 
   _targetTag: 
-  _consideration: {fileID: 11400000, guid: 563d3d88041847e49be387b7fbd18976, type: 2}
+  _consideration: {fileID: 11400000, guid: 6eb653960661fa84da86b003cfa6de5b, type: 2}
+  priority: 10
   wrappedAction: {fileID: 11400000, guid: f4d3dae09178cb14c87e1fa302e5ad9a, type: 2}
   invertDirection: 0

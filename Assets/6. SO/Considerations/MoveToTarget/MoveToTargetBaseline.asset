@@ -9,9 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: faabd8c04df1ef445b73aa8bdd0e0155, type: 3}
-  m_Name: MoveToPlayer
+  m_Script: {fileID: 11500000, guid: d25daab04837f7a489591c6255be7b63, type: 3}
+  m_Name: MoveToTargetBaseline
   m_EditorClassIdentifier: 
-  _targetTag: 
-  _consideration: {fileID: 11400000, guid: 23f23615b1068ed499f2f6be2d66dfc8, type: 2}
-  priority: 10
+  _value: 0.2

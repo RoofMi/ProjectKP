@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Combo
   m_EditorClassIdentifier: 
   _targetTag: 
-  _consideration: {fileID: 11400000, guid: dd2fb24a772fde3438deb228a40ae50d, type: 2}
+  _consideration: {fileID: 11400000, guid: 244c1f8048311d94ca77b9ac6d85d528, type: 2}
   priority: 30
   reactionTime: 0.2
