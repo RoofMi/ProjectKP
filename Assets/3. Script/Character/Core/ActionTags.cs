@@ -8,5 +8,8 @@ namespace Character.Core
         public const string Dashing = "Dashing";
         public const string Stunned = "Stunned";
         public const string AirDashUsed = "AirDashUsed";
+        
+        // General tag for any action that should block AI decision making
+        public const string ExecutingAction = "ExecutingAction";
     }
 }
