@@ -74,7 +74,7 @@ namespace AI
             {
                 _lastHitTime = Time.time;
                 _hitConfirmed = true;
-                Debug.Log($"[AI] Hit confirmed on {hitInfo.target.name}");
+                UnityEngine.Debug.Log($"[AI] Hit confirmed on {hitInfo.target.name}");
             }
         }
         
@@ -88,6 +88,19 @@ namespace AI
         {
             UpdateContext();
             
+            // Check if currently executing a blocking action (like dash)
+            bool isExecutingAction = _context.ActionController != null && 
+                                   _context.ActionController.HasTag(ActionTags.ExecutingAction);
+            
+            // If executing a blocking action (e.g., dash), skip decision making
+            if (isExecutingAction)
+            {
+                // Don't execute any actions during blocking actions like dash
+                // The action will complete on its own
+                return; // Skip decision making and execution entirely
+            }
+            
+            // Normal execution for non-blocking actions
             _currentAction?.Execute(_context);
             
             // Evaluate new action periodically
@@ -97,8 +110,8 @@ namespace AI
                 
                 if (bestAction != _currentAction)
                 {
+                    RecordDecisionChange(bestAction); // 디버깅용 히스토리 기록
                     _currentAction = bestAction;
-                    Debug.Log($"[AI] Switched to action: {_currentAction?.name}");
                 }
                 
                 _nextDecisionTime = Time.time + decisionInterval;
@@ -137,11 +150,11 @@ namespace AI
             if (_context.ActionController != null)
             {
                 _context.SetData(ContextKeys.IsAttacking, 
-                    _context.ActionController.HasTag(ActionTags.Attacking));
+                    _context.ActionController.HasTag(ActionTags.Attacking) ? 1.0f : 0.0f);
                 _context.SetData(ContextKeys.IsAirborne, 
-                    _context.ActionController.HasTag(ActionTags.Airborne));
+                    _context.ActionController.HasTag(ActionTags.Airborne) ? 1.0f : 0.0f);
                 _context.SetData(ContextKeys.IsStunned, 
-                    _context.ActionController.HasTag(ActionTags.Stunned));
+                    _context.ActionController.HasTag(ActionTags.Stunned) ? 1.0f : 0.0f);
             }
             
             if (_playerCharacter != null)
@@ -151,34 +164,34 @@ namespace AI
                 
                 _context.SetData(ContextKeys.DistanceToTarget, distance);
                 _context.SetData(ContextKeys.DistanceNormalized, Mathf.Clamp01(distance / 20f));
-                _context.SetData(ContextKeys.InMeleeRange, distance <= 2f);
+                _context.SetData(ContextKeys.InMeleeRange, distance <= 2f ? 1.0f : 0.0f);
             }
             
             if (_context.ComboManager != null)
             {
                 bool isInCombo = _context.ComboManager.IsInCombo();
-                _context.SetData(ContextKeys.InCombo, isInCombo);
+                _context.SetData(ContextKeys.InCombo, isInCombo ? 1.0f : 0.0f);
                 
                 int comboDepth = _context.ComboManager.GetComboDepth();
                 _context.SetData(ContextKeys.ComboDepth, comboDepth);
                 
-                _context.SetData(ContextKeys.ComboWindowActive, _context.ComboManager.IsInComboWindow);
+                _context.SetData(ContextKeys.ComboWindowActive, _context.ComboManager.IsInComboWindow ? 1.0f : 0.0f);
                 
                 if (_hitConfirmed && Time.time - _lastHitTime > HIT_CONFIRM_DURATION)
                 {
                     _hitConfirmed = false;
                 }
-                _context.SetData(ContextKeys.HitConfirm, _hitConfirmed);
+                _context.SetData(ContextKeys.HitConfirm, _hitConfirmed ? 1.0f : 0.0f);
                 
                 float timeSinceLastHit = _lastHitTime > 0 ? Time.time - _lastHitTime : float.MaxValue;
                 _context.SetData(ContextKeys.LastHitTime, timeSinceLastHit);
             }
             else
             {
-                _context.SetData(ContextKeys.InCombo, false);
+                _context.SetData(ContextKeys.InCombo, 0.0f);
                 _context.SetData(ContextKeys.ComboDepth, 0);
-                _context.SetData(ContextKeys.ComboWindowActive, false);
-                _context.SetData(ContextKeys.HitConfirm, false);
+                _context.SetData(ContextKeys.ComboWindowActive, 0.0f);
+                _context.SetData(ContextKeys.HitConfirm, 0.0f);
                 _context.SetData(ContextKeys.LastHitTime, float.MaxValue);
             }
             
@@ -203,17 +216,17 @@ namespace AI
             if (_context.TargetActionController != null)
             {
                 _context.SetData(ContextKeys.TargetAttacking, 
-                    _context.TargetActionController.HasTag(ActionTags.Attacking));
+                    _context.TargetActionController.HasTag(ActionTags.Attacking) ? 1.0f : 0.0f);
                 _context.SetData(ContextKeys.TargetAirborne, 
-                    _context.TargetActionController.HasTag(ActionTags.Airborne));
+                    _context.TargetActionController.HasTag(ActionTags.Airborne) ? 1.0f : 0.0f);
                 _context.SetData(ContextKeys.TargetInHitstun, 
-                    _context.TargetActionController.HasTag(ActionTags.Stunned));
+                    _context.TargetActionController.HasTag(ActionTags.Stunned) ? 1.0f : 0.0f);
             }
             else
             {
-                _context.SetData(ContextKeys.TargetAttacking, false);
-                _context.SetData(ContextKeys.TargetAirborne, false);
-                _context.SetData(ContextKeys.TargetInHitstun, false);
+                _context.SetData(ContextKeys.TargetAttacking, 0.0f);
+                _context.SetData(ContextKeys.TargetAirborne, 0.0f);
+                _context.SetData(ContextKeys.TargetInHitstun, 0.0f);
             }
             
             float combatDuration = Time.time - _combatStartTime;
@@ -222,5 +235,114 @@ namespace AI
             float timeSinceLastAction = Time.time - _lastActionTime;
             _context.SetData(ContextKeys.TimeSinceLastAction, timeSinceLastAction);
         }
+        
+        #region Debug Support
+        
+        // 디버그용 필드들
+        private List<DecisionRecord> _decisionHistory = new List<DecisionRecord>();
+        private const int MAX_HISTORY = 10;
+        
+        [Serializable]
+        public class ActionUtilityInfo
+        {
+            public string actionName;
+            public float utility;
+            public bool isCurrentAction;
+            
+            public ActionUtilityInfo(string name, float util, bool current)
+            {
+                actionName = name;
+                utility = util;
+                isCurrentAction = current;
+            }
+        }
+        
+        [Serializable]
+        public class DecisionRecord
+        {
+            public float timestamp;
+            public string actionName;
+            public float utility;
+            
+            public DecisionRecord(string action, float util)
+            {
+                timestamp = Time.time;
+                actionName = action;
+                utility = util;
+            }
+        }
+        
+        // 의사결정 변경 기록 (디버깅용)
+        private void RecordDecisionChange(AIAction newAction)
+        {
+            if (newAction == null) return;
+            
+            float utility = newAction.CalculateUtility(_context);
+            _decisionHistory.Add(new DecisionRecord(newAction.name, utility));
+            
+            if (_decisionHistory.Count > MAX_HISTORY)
+            {
+                _decisionHistory.RemoveAt(0);
+            }
+        }
+        
+        // 모든 액션과 Utility 점수 반환
+        public List<ActionUtilityInfo> GetAllActionsWithUtility()
+        {
+            var result = new List<ActionUtilityInfo>();
+            foreach (var action in _actions)
+            {
+                if (action != null)
+                {
+                    float utility = action.CalculateUtility(_context);
+                    bool isCurrent = action == _currentAction;
+                    result.Add(new ActionUtilityInfo(action.name, utility, isCurrent));
+                }
+            }
+            return result;
+        }
+        
+        // 현재 실행 중인 액션
+        public string GetCurrentActionName()
+        {
+            return _currentAction != null ? _currentAction.name : "None";
+        }
+        
+        // Context 주요 값들
+        public Dictionary<string, object> GetContextDebugInfo()
+        {
+            var debugInfo = new Dictionary<string, object>();
+            
+            // Basic Status
+            debugInfo["Health"] = _context.GetData<float>(ContextKeys.Health);
+            debugInfo["Stamina"] = _context.GetData<float>(ContextKeys.Stamina);
+            debugInfo["IsAttacking"] = _context.GetData<float>(ContextKeys.IsAttacking) > 0.5f;
+            debugInfo["IsAirborne"] = _context.GetData<float>(ContextKeys.IsAirborne) > 0.5f;
+            debugInfo["IsStunned"] = _context.GetData<float>(ContextKeys.IsStunned) > 0.5f;
+            
+            // Distance & Position
+            debugInfo["DistanceToTarget"] = _context.GetData<float>(ContextKeys.DistanceToTarget);
+            debugInfo["InMeleeRange"] = _context.GetData<float>(ContextKeys.InMeleeRange) > 0.5f;
+            
+            // Combo Info
+            debugInfo["InCombo"] = _context.GetData<float>(ContextKeys.InCombo) > 0.5f;
+            debugInfo["ComboDepth"] = _context.GetData<int>(ContextKeys.ComboDepth);
+            debugInfo["ComboWindowActive"] = _context.GetData<float>(ContextKeys.ComboWindowActive) > 0.5f;
+            debugInfo["HitConfirm"] = _context.GetData<float>(ContextKeys.HitConfirm) > 0.5f;
+            
+            // Target Info
+            debugInfo["TargetHealth"] = _context.GetData<float>(ContextKeys.TargetHealth);
+            debugInfo["TargetAttacking"] = _context.GetData<float>(ContextKeys.TargetAttacking) > 0.5f;
+            
+            return debugInfo;
+        }
+        
+        // 의사결정 히스토리
+        public List<DecisionRecord> GetDecisionHistory()
+        {
+            return new List<DecisionRecord>(_decisionHistory);
+        }
+        
+        #endregion
     }
 }
