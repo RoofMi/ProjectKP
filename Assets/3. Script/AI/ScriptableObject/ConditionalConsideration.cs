@@ -24,11 +24,22 @@ namespace AI.ScriptableObject
         [Tooltip("The threshold value to compare against")]
         [SerializeField] private float _threshold = 0.3f;
         
-        [Header("Branches")]
-        [Tooltip("Consideration to evaluate when condition is TRUE")]
+        [Header("Value Mode")]
+        [Tooltip("Use direct float values instead of Consideration branches")]
+        [SerializeField] private bool _useDirectValues = false;
+        
+        [Header("Direct Values")]
+        [Tooltip("Value to return when condition is TRUE (only used if Use Direct Values is checked)")]
+        [SerializeField] private float _trueValue = 1.0f;
+        
+        [Tooltip("Value to return when condition is FALSE (only used if Use Direct Values is checked)")]
+        [SerializeField] private float _falseValue = 0.0f;
+        
+        [Header("Consideration Branches")]
+        [Tooltip("Consideration to evaluate when condition is TRUE (only used if Use Direct Values is unchecked)")]
         [SerializeField] private Consideration _trueBranch;
         
-        [Tooltip("Consideration to evaluate when condition is FALSE")]
+        [Tooltip("Consideration to evaluate when condition is FALSE (only used if Use Direct Values is unchecked)")]
         [SerializeField] private Consideration _falseBranch;
         
         [Header("Fallback")]
@@ -37,18 +48,14 @@ namespace AI.ScriptableObject
 
         public override float Evaluate(AIContext context)
         {
-            if (_trueBranch == null && _falseBranch == null)
-            {
-                Debug.LogError("[ConditionalConsideration] No branches set, using default");
-                return _defaultValue;
-            }
-            
+            // Get context value
             float contextValue = 0f;
             if (!string.IsNullOrEmpty(_contextKey))
             {
                 contextValue = context.GetData<float>(_contextKey);
             }
 
+            // Evaluate condition
             bool condition = false;
             
             switch (_comparison)
@@ -93,8 +100,27 @@ namespace AI.ScriptableObject
                     break;
             }
             
-            float evaluation = condition ? _trueBranch.Evaluate(context) :  _falseBranch.Evaluate(context);
-            return evaluation;
+            // Return based on mode
+            if (_useDirectValues)
+            {
+                return condition ? _trueValue : _falseValue;
+            }
+            else
+            {
+                // Use consideration branches
+                if (_trueBranch == null && _falseBranch == null)
+                {
+                    Debug.LogError("[ConditionalConsideration] No branches set, using default");
+                    return _defaultValue;
+                }
+                
+                if (condition && _trueBranch != null)
+                    return _trueBranch.Evaluate(context);
+                else if (!condition && _falseBranch != null)
+                    return _falseBranch.Evaluate(context);
+                else
+                    return _defaultValue;
+            }
         }
 
 #if UNITY_EDITOR

@@ -30,7 +30,7 @@ namespace AI.ScriptableObject
         {
             if (_considerations == null || _considerations.Count == 0)
             {
-                Debug.LogError("[MultiConsideration] no Considerations found");
+                Debug.LogError($"[MultiConsideration] {name}: No Considerations found");
                 return 0f;
             }
 
@@ -39,15 +39,26 @@ namespace AI.ScriptableObject
                 _scoreBuffer = new float[_considerations.Count];
             }
 
+            // Count valid considerations and evaluate them
+            _validCount = 0;
             for (int i = 0; i < _considerations.Count; i++)
             {
                 if (_considerations[i] == null)
                 {
-                    Debug.LogError("[MultiConsideration] invalid Consideration found");
-                    return 0f;
+                    Debug.LogWarning($"[MultiConsideration] {name}: Null Consideration at index {i}, skipping");
+                    _scoreBuffer[i] = 0f;
+                    continue;
                 }
                 
                 _scoreBuffer[i] = _considerations[i].Evaluate(context);
+                _validCount++;
+            }
+            
+            // If no valid considerations, return 0
+            if (_validCount == 0)
+            {
+                Debug.LogError($"[MultiConsideration] {name}: No valid Considerations to evaluate");
+                return 0f;
             }
 
             // TODO(human): Implement the aggregation logic here
@@ -74,13 +85,19 @@ namespace AI.ScriptableObject
                 case AggregationType.Average:
                 {
                     evaluation = 0f;
+                    float sum = 0f;
+                    int count = 0;
                     
                     for (int i = 0; i < _considerations.Count; i++)
                     {
-                        evaluation += _scoreBuffer[i];
+                        if (_considerations[i] != null)
+                        {
+                            sum += _scoreBuffer[i];
+                            count++;
+                        }
                     }
                     
-                    evaluation = evaluation / _considerations.Count;
+                    evaluation = count > 0 ? sum / count : 0f;
                     break;
                 }
 
@@ -113,11 +130,22 @@ namespace AI.ScriptableObject
                 case AggregationType.WeightedSum:
                 {
                     evaluation = 0f;
+                    float totalWeight = 0f;
 
                     for (int i = 0; i < _considerations.Count; i++)
                     {
-                        float weight = (i < _weights.Count) ? _weights[i] : 1f;
-                        evaluation += _scoreBuffer[i] * weight;
+                        if (_considerations[i] != null)
+                        {
+                            float weight = (i < _weights.Count) ? _weights[i] : 1f;
+                            evaluation += _scoreBuffer[i] * weight;
+                            totalWeight += weight;
+                        }
+                    }
+                    
+                    // Normalize by total weight to keep result in 0-1 range
+                    if (totalWeight > 0)
+                    {
+                        evaluation = evaluation / totalWeight;
                     }
 
                     break;
@@ -152,15 +180,22 @@ namespace AI.ScriptableObject
                 return "No considerations";
 
             var debugInfo = $"MultiConsideration ({_aggregationType}):\n";
+            int validCount = 0;
             for (int i = 0; i < _considerations.Count; i++)
             {
                 if (_considerations[i] != null)
                 {
                     float score = _considerations[i].Evaluate(context);
-                    string weight = _aggregationType == AggregationType.WeightedSum ? $" (w:{_weights[i]:F2})" : "";
+                    string weight = _aggregationType == AggregationType.WeightedSum && i < _weights.Count ? $" (w:{_weights[i]:F2})" : "";
                     debugInfo += $"  [{i}] {_considerations[i].name}: {score:F3}{weight}\n";
+                    validCount++;
+                }
+                else
+                {
+                    debugInfo += $"  [{i}] <null>\n";
                 }
             }
+            debugInfo += $"  Valid: {validCount}/{_considerations.Count}\n";
             debugInfo += $"  Final: {Evaluate(context):F3}";
             return debugInfo;
         }
