@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 using Actions;
 using Character.Core;
 
@@ -29,9 +30,10 @@ namespace Character
         
         private CharacterController _characterController;
         private ActionController _actionController;
+        private NavMeshAgent _navMeshAgent;  // AI 지원
         
-        private Vector3 _dashVelocity;
         private Vector2 _inputVector;
+        private bool IsAIControlled => _navMeshAgent != null;
         
         public Vector2 GetInputDirection() => _inputVector;
 
@@ -39,6 +41,15 @@ namespace Character
         {
             _characterController = GetComponent<CharacterController>();
             _actionController = GetComponent<ActionController>();
+            _navMeshAgent = GetComponent<NavMeshAgent>();
+            
+            // NavMeshAgent 설정 (AI 캐릭터인 경우)
+            if (_navMeshAgent != null)
+            {
+                // 이미 AIContext에서 설정했지만 안전을 위해 재확인
+                _navMeshAgent.updatePosition = false;
+                _navMeshAgent.updateRotation = true;
+            }
         }
         
         private void Update()
@@ -54,68 +65,57 @@ namespace Character
         public void UpdateMovement(Vector2 inputValue, float deltaTime)
         {
             bool isAttacking = _actionController != null && _actionController.HasTag(ActionTags.Attacking);
-            
-            if (_dashVelocity.magnitude > 0)
+            Vector3 moveDirection;
+
+            if (IsAIControlled && _navMeshAgent != null && _navMeshAgent.enabled && _navMeshAgent.hasPath)
             {
-                if (IsGrounded())
-                {
-                    if (_verticalVelocity < 0f)
-                    {
-                        _verticalVelocity = -2f;
-                    }
-                }
-                else
-                {
-                    if (_gravityEnabled)
-                    {
-                        _verticalVelocity -= Gravity * deltaTime;
-                    }
-                    else
-                    {
-                        _verticalVelocity = 0f;
-                    }
-                }
-                
-                Vector3 totalVelocity = _dashVelocity;
-                totalVelocity.y = _verticalVelocity;
-                _characterController.Move(totalVelocity * deltaTime);
+                Vector3 aiVelocity = _navMeshAgent.desiredVelocity;
+                moveDirection = new Vector3(aiVelocity.x, 0, aiVelocity.z).normalized;
             }
             else
             {
-                Vector3 moveDirection = GetCameraAlignedDirection(inputValue);
-                
-                if (!isAttacking)
+                moveDirection = GetCameraAlignedDirection(inputValue);
+            }
+
+            if (!isAttacking)
+            {
+                if (IsAIControlled && _navMeshAgent != null && _navMeshAgent.enabled && _navMeshAgent.hasPath)
+                {
+                    _horizontalVelocity = _navMeshAgent.desiredVelocity;
+                    _horizontalVelocity.y = 0;
+                }
+                else
                 {
                     _horizontalVelocity = moveDirection * MoveSpeed;
                 }
-                else
-                {
-                    _horizontalVelocity = Vector3.zero;
-                }
-
-                if (IsGrounded())
-                {
-                    if (_verticalVelocity < 0f)
-                    {
-                        _verticalVelocity = -2f;
-                    }
-                }
-                else
-                {
-                    if (_gravityEnabled)
-                    {
-                        _verticalVelocity -= Gravity * deltaTime;
-                    }
-                    else
-                    {
-                        _verticalVelocity = 0f;
-                    }
-                }
-
-                Vector3 moveVelocity = _horizontalVelocity;
-                moveVelocity.y = _verticalVelocity;
-                _characterController.Move(moveVelocity * deltaTime);
             }
+            else
+            {
+                _horizontalVelocity = Vector3.zero;
+            }
+
+            if (IsGrounded())
+            {
+                if (_verticalVelocity < 0f)
+                {
+                    _verticalVelocity = -2f;
+                }
+            }
+            else
+            {
+                if (_gravityEnabled)
+                {
+                    _verticalVelocity -= Gravity * deltaTime;
+                }
+                else
+                {
+                    _verticalVelocity = 0f;
+                }
+            }
+
+            Vector3 moveVelocity = _horizontalVelocity;
+            moveVelocity.y = _verticalVelocity;
+            _characterController.Move(moveVelocity * deltaTime);
         }
         
         public void UpdateRotation(float deltaTime, bool bInstantRotation = false)
@@ -198,23 +198,6 @@ namespace Character
         public void ResetVerticalVelocity()
         {
             _verticalVelocity = 0f;
-        }
-        
-        public void SetDashVelocity(Vector3 velocity)
-        {
-            _dashVelocity = velocity;
-            _dashVelocity.y = 0f;
-        }
-        
-        public void ResetDashVelocity()
-        {
-            _dashVelocity = Vector3.zero;
-        }
-        
-        public void ApplyDashDrag(float drag, float deltaTime)
-        {
-            _dashVelocity.x /= 1 + drag * deltaTime;
-            _dashVelocity.z /= 1 + drag * deltaTime;
         }
         
     }

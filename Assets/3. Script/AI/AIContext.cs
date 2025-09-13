@@ -49,6 +49,15 @@ namespace AI
             _stamina = brain.GetComponent<StaminaComponent>();
             _movement = brain.GetComponent<CharacterMovement>();
             
+            // NavMeshAgent와 CharacterController 통합 설정
+            if (_agent != null && brain.GetComponent<CharacterController>() != null)
+            {
+                // NavMeshAgent는 경로 계산만, CharacterController가 실제 이동 담당
+                _agent.updatePosition = false;
+                _agent.updateRotation = true;
+                Debug.Log("[AI] NavMeshAgent configured for CharacterController integration");
+            }
+            
             if (_playerCharacter != null)
             {
                 _targetHealth = _playerCharacter.GetComponent<HealthComponent>();

@@ -10,9 +10,7 @@ namespace Actions
     public class DashAction : DurationAction
     {
         [Header("Dash Settings")]
-        public float dashSpeed;
-        public float dashDuration;
-        public float dashStartDelay = 0.1f;
+        public float dashDuration = 0.5f;
         
         private void Reset()
         {
@@ -23,10 +21,8 @@ namespace Actions
             staminaCost = 20f;
             requiredTags = null;
             blockingTags = new string[] { ActionTags.Stunned, ActionTags.Dashing };
-            
-            dashSpeed = 20f;
-            dashDuration = 0.3f;
-            dashStartDelay = 0.1f;
+
+            dashDuration = 0.5f;
         }
         
         public override bool CanExecute(ActionContext context)
@@ -49,24 +45,28 @@ namespace Actions
         public override IEnumerator ExecuteOverTime(ActionContext context, ActiveAction activeAction)
         {
             bool isAirDash = context.ActionController.HasTag(ActionTags.Airborne);
-            
+
             if (isAirDash)
             {
                 context.ActionController.AddTag(ActionTags.AirDashUsed);
                 context.Movement.SetGravityEnabled(false);
             }
-            
+
+            // 상태 태그 추가
             context.ActionController.AddTag(ActionTags.Dashing);
+            context.ActionController.AddTag(ActionTags.ExecutingAction);
             context.Animator.SetTrigger(AnimationHashes.DashStart);
-            
+
             Vector2 dashDirection = activeAction.Data as Vector2? ?? new Vector2(0, 0);
+
             if (dashDirection.magnitude < 0.1f)
             {
                 Vector3 forward = context.Owner.transform.forward;
                 dashDirection = new Vector2(forward.x, forward.z).normalized;
             }
-            
+
             Vector3 worldDashDirection = new Vector3(dashDirection.x, 0, dashDirection.y);
+
             if (context.Movement.CameraTransform != null)
             {
                 Vector3 camForward = context.Movement.CameraTransform.forward;
@@ -77,30 +77,20 @@ namespace Actions
                 camRight.Normalize();
                 worldDashDirection = (camForward * dashDirection.y + camRight * dashDirection.x).normalized;
             }
-            
-            float elapsed = 0;
-            
-            if (dashStartDelay > 0)
+            else
             {
-                yield return new WaitForSeconds(dashStartDelay);
+                // AI 캐릭터는 카메라가 없으므로 월드 방향 그대로 사용
+                worldDashDirection = worldDashDirection.normalized;
             }
-            
-            Vector3 dashVelocity = worldDashDirection * dashSpeed;
-            context.Movement.SetDashVelocity(dashVelocity);
-            
-            while (elapsed < dashDuration)
-            {
-                context.Movement.UpdateRotation(Time.deltaTime, true);
-                
-                elapsed += Time.deltaTime;
-                yield return null;
-            }
-            
-            context.Movement.ResetDashVelocity();
-            
+
+            // 대시 지속 시간 동안 대기 (루트모션이 실제 이동 처리)
+            yield return new WaitForSeconds(dashDuration);
+
+            // 상태 태그 제거
             context.ActionController.RemoveTag(ActionTags.Dashing);
+            context.ActionController.RemoveTag(ActionTags.ExecutingAction);
             context.Animator.SetTrigger(AnimationHashes.DashEnd);
-            
+
             if (isAirDash)
             {
                 context.Movement.SetGravityEnabled(true);

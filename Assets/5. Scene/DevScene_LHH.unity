@@ -954,6 +954,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a403508c543e726458c377f80e0227c0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1428772061}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a403508c543e726458c377f80e0227c0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1428772068}
   m_SourcePrefab: {fileID: 100100000, guid: a403508c543e726458c377f80e0227c0, type: 3}
 --- !u!1001 &1152364562
 PrefabInstance:
@@ -967,6 +970,10 @@ PrefabInstance:
       propertyPath: <CameraTransform>k__BackingField
       value: 
       objectReference: {fileID: 936225199}
+    - target: {fileID: 1846451363874044454, guid: ae7872ade512b8543a9a5e23532f6de9, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4914577023205309158, guid: ae7872ade512b8543a9a5e23532f6de9, type: 3}
       propertyPath: m_Name
       value: PlayerPrefab
@@ -1237,7 +1244,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 2dcfedce4699d1043bb4a192ccbac782, type: 2}
   - {fileID: 11400000, guid: 4dfac81dcd6550b4c822dabd5f637188, type: 2}
   - {fileID: 11400000, guid: 16297203057989c4b9c45702a95815a9, type: 2}
-  - {fileID: 11400000, guid: 859fc69eec33fe94f9e391a9f335f03a, type: 2}
   - {fileID: 11400000, guid: c6c94d5a8b449c74eb76eb5b765ae7b1, type: 2}
   decisionInterval: 0.2
   _combatEventChannel: {fileID: 11400000, guid: 61d0f143d8bc67b47ae25c2cdc17880f, type: 2}
@@ -1263,6 +1269,18 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &1428772068
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1428772056}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27d1eaa288a1228458cf5d98fd4dd3a7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1463718439
 GameObject:
   m_ObjectHideFlags: 0

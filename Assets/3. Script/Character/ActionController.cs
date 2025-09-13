@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Actions.Core;
 using Character.Core;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace Character
 {
@@ -12,6 +13,7 @@ namespace Character
         [SerializeField] private Animator _animator;
         [SerializeField] private CharacterMovement _movement;
         [SerializeField] private StaminaComponent _stamina;
+        [SerializeField] private NavMeshAgent _navMeshAgent;
         
         [Header("Debug")]
         [SerializeField] private List<ActiveAction> _activeActions = new();
@@ -28,6 +30,7 @@ namespace Character
             if (_animator == null) _animator = GetComponent<Animator>();
             if (_movement == null) _movement = GetComponent<CharacterMovement>();
             if (_stamina == null) _stamina = GetComponent<StaminaComponent>();
+            if (_navMeshAgent == null) _navMeshAgent = GetComponent<NavMeshAgent>();
             
             _context = new ActionContext(gameObject);
         }
@@ -71,10 +74,15 @@ namespace Character
                 _stamina.UseStamina(action.staminaCost);
             }
             Vector2 inputDirection = _movement != null ? _movement.GetInputDirection() : Vector2.zero;
-            
+
             var active = new ActiveAction(action, data, inputDirection);
             _activeActions.Add(active);
-            
+
+            if (_navMeshAgent != null && _navMeshAgent.enabled)
+            {
+                _navMeshAgent.enabled = false;
+            }
+
             action.Execute(_context);
             
             if (action.cooldown > 0f)
@@ -104,6 +112,12 @@ namespace Character
         {
             yield return action.ExecuteOverTime(_context, active);
             _activeActions.Remove(active);
+
+            if (_activeActions.Count == 0 && _navMeshAgent != null && !_navMeshAgent.enabled)
+            {
+                _navMeshAgent.Warp(transform.position);
+                _navMeshAgent.enabled = true;
+            }
         }
         
         private void StopAction(ActiveAction activeAction)
@@ -113,6 +127,12 @@ namespace Character
                 StopCoroutine(activeAction.Coroutine);
             }
             _activeActions.Remove(activeAction);
+
+            if (_activeActions.Count == 0 && _navMeshAgent != null && !_navMeshAgent.enabled)
+            {
+                _navMeshAgent.Warp(transform.position);
+                _navMeshAgent.enabled = true;
+            }
         }
         
         public bool HasTag(string tag) => _tags.Contains(tag);
