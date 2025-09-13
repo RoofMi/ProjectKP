@@ -57,7 +57,6 @@ namespace AI
             
             object data = null;
             
-            Debug.Log($"[WrapperAIAction] Wrapped action type: {wrappedAction?.GetType()?.FullName}, is DashAction: {wrappedAction is Actions.DashAction}");
             
             // Special handling for DashAction - provide direction data
             if (wrappedAction is Actions.DashAction)
@@ -68,17 +67,14 @@ namespace AI
                     toTarget.y = 0; // Y축 제거하여 수평 방향만 계산
                     Vector3 direction = toTarget.normalized;
                     
-                    Debug.Log($"[WrapperAIAction] DashAction - Original direction to target: {direction}, invertDirection: {invertDirection}");
                     
                     if (invertDirection)
                     {
                         direction = -direction;
-                        Debug.Log($"[WrapperAIAction] Direction inverted: {direction}");
                     }
                     
                     // 정규화된 방향을 Vector2로 변환
                     data = new Vector2(direction.x, direction.z).normalized;
-                    Debug.Log($"[WrapperAIAction] Final Vector2 data: {data}");
                 }
             }
             // Other actions that need data can be added here in the future

@@ -55,7 +55,6 @@ namespace AI
                 // NavMeshAgent는 경로 계산만, CharacterController가 실제 이동 담당
                 _agent.updatePosition = false;
                 _agent.updateRotation = true;
-                Debug.Log("[AI] NavMeshAgent configured for CharacterController integration");
             }
             
             if (_playerCharacter != null)
