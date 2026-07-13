@@ -16,25 +16,37 @@ MonoBehaviour:
   ComboSteps:
   - ComboNode: {fileID: 11400000, guid: 7a9a368c18f0c1d45a6e39057eb77e0c, type: 2}
     InputKey: LightAttack
-    Damage: 10
+    DamageMultiplier: 1
+    ApplyKnockback: 1
+    KnockbackHorizontalForce: 10
+    KnockbackVerticalForce: 5
     WindowStart: 0.5
     WindowEnd: 0.9
     StaminaCost: 10
   - ComboNode: {fileID: 11400000, guid: 834abeb4696af994ab3654ace8356e82, type: 2}
     InputKey: LightAttack
-    Damage: 10
+    DamageMultiplier: 1
+    ApplyKnockback: 1
+    KnockbackHorizontalForce: 10
+    KnockbackVerticalForce: 5
     WindowStart: 0.5
     WindowEnd: 0.9
     StaminaCost: 10
   - ComboNode: {fileID: 11400000, guid: 504c3c109f82bde4ebb602e030a2ea92, type: 2}
     InputKey: LightAttack
-    Damage: 10
+    DamageMultiplier: 1
+    ApplyKnockback: 1
+    KnockbackHorizontalForce: 10
+    KnockbackVerticalForce: 5
     WindowStart: 0.5
     WindowEnd: 0.9
     StaminaCost: 10
   - ComboNode: {fileID: 11400000, guid: 8f7dd54c67386864ebed8d8644481bd4, type: 2}
     InputKey: LightAttack
-    Damage: 10
+    DamageMultiplier: 1
+    ApplyKnockback: 1
+    KnockbackHorizontalForce: 10
+    KnockbackVerticalForce: 5
     WindowStart: 0.5
     WindowEnd: 0.9
     StaminaCost: 10

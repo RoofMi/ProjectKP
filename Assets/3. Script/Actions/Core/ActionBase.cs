@@ -34,6 +34,14 @@ namespace Actions.Core
         {
             return true;
         }
+
+        public virtual void OnCompleted(ActionContext context, ActiveAction activeAction)
+        {
+        }
+
+        public virtual void OnCancelled(ActionContext context, ActiveAction activeAction)
+        {
+        }
         
         protected bool CheckTags(ActionContext context)
         {

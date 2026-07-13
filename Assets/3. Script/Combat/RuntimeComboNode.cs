@@ -10,7 +10,10 @@ namespace Combat
         
         // 빠른 접근을 위한 프로퍼티
         public ComboNode StepNode => StepReference?.ComboNode;
-        public float Damage => StepReference?.Damage ?? 0f;
+        public float DamageMultiplier => StepReference?.DamageMultiplier ?? 1f;
+        public bool ApplyKnockback => StepReference?.ApplyKnockback ?? false;
+        public float KnockbackHorizontalForce => StepReference?.KnockbackHorizontalForce ?? 0f;
+        public float KnockbackVerticalForce => StepReference?.KnockbackVerticalForce ?? 0f;
         public float WindowStart => StepReference?.WindowStart ?? 0.5f;
         public float WindowEnd => StepReference?.WindowEnd ?? 0.9f;
         public float StaminaCost => StepReference?.StaminaCost ?? 0f;

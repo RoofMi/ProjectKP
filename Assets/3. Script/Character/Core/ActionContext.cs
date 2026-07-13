@@ -11,6 +11,7 @@ namespace Character.Core
         public readonly Animator Animator;
         public readonly StaminaComponent Stamina;
         public readonly ComboManager ComboManager;
+        public readonly WeaponManager WeaponManager;
         
         public ActionContext(GameObject owner)
         {
@@ -20,6 +21,7 @@ namespace Character.Core
             Animator = owner.GetComponent<Animator>();
             Stamina = owner.GetComponent<StaminaComponent>();
             ComboManager = owner.GetComponent<ComboManager>();
+            WeaponManager = owner.GetComponent<WeaponManager>();
         }
         
         public bool IsValid()

@@ -26,9 +26,14 @@ namespace Actions
                 yield break;
             }
             
-            if (!context.HasAllComponents())
+            if (!context.HasAllComponents() || context.WeaponManager == null)
             {
                 Debug.LogError("[ComboAction] Missing required components!");
+                yield break;
+            }
+
+            if (!context.WeaponManager.BeginAttack(comboNode))
+            {
                 yield break;
             }
             
@@ -118,8 +123,7 @@ namespace Actions
                 
                 yield return null;
             }
-            context.ActionController.RemoveTag(ActionTags.Attacking);
-            context.ComboManager.SetComboWindow(false);
+            ResetCombatState(context);
             context.Animator.CrossFadeInFixedTime(AnimationStates.IdleRun, crossFadeDuration);
         }
         
@@ -140,6 +144,29 @@ namespace Actions
         public override bool ShouldUseStamina()
         {
             return false;
+        }
+
+        public override void OnCompleted(ActionContext context, ActiveAction activeAction)
+        {
+            ResetCombatState(context);
+        }
+
+        public override void OnCancelled(ActionContext context, ActiveAction activeAction)
+        {
+            ResetCombatState(context);
+
+            if (context.Animator != null)
+            {
+                context.Animator.CrossFadeInFixedTime(AnimationStates.IdleRun, crossFadeDuration);
+            }
+        }
+
+        private void ResetCombatState(ActionContext context)
+        {
+            context.ActionController?.RemoveTag(ActionTags.Attacking);
+            context.ComboManager?.SetComboWindow(false);
+            context.WeaponManager?.ResetAttackState();
+            _isInComboWindow = false;
         }
     }
 }

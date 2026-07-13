@@ -35,17 +35,24 @@ namespace Combat
             
             if (damageable != null)
             {
-                // TODO: 실제 데미지 계산 (무기, 스탯 등)
-                float damage = 10f;
-                Vector3 knockbackDirection = (damageable.Transform.position - hitInfo.attacker.transform.position).normalized;
-                knockbackDirection.y = 0;
+                if (damageable.IsDead)
+                {
+                    return;
+                }
 
-                damageable.TakeDamage(damage);
+                damageable.TakeDamage(hitInfo.damage);
 
-                //if (hitInfo.applyKnockback)
-                    damageable.TakeKnockback(knockbackDirection, 10f, 5f);
+                if (hitInfo.applyKnockback && !damageable.IsDead)
+                {
+                    Vector3 knockbackDirection = damageable.Transform.position - hitInfo.attacker.transform.position;
+                    knockbackDirection.y = 0f;
+                    damageable.TakeKnockback(
+                        knockbackDirection.normalized,
+                        hitInfo.knockbackHorizontalForce,
+                        hitInfo.knockbackVerticalForce);
+                }
 
-                Debug.Log($"[CombatController] Dealt damage to {hitInfo.target.name}");
+                Debug.Log($"[CombatController] Dealt {hitInfo.damage} damage to {hitInfo.target.name}");
             }
         }
     }

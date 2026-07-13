@@ -1,5 +1,6 @@
 using AI;
 using Character;
+using Combat;
 using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
@@ -11,6 +12,9 @@ namespace CombatDemo
 {
     public sealed class CombatDemoController : MonoBehaviour
     {
+        private const string PlayerLayerName = "Player";
+        private const string EnemyLayerName = "Enemy";
+
         [Header("Combatants")]
         [SerializeField] private GameObject _player;
         [SerializeField] private GameObject _enemy;
@@ -42,6 +46,12 @@ namespace CombatDemo
         {
             ResolveReferences();
             if (!HasRequiredReferences())
+            {
+                enabled = false;
+                return;
+            }
+
+            if (!ConfigureCombatantLayers())
             {
                 enabled = false;
                 return;
@@ -152,6 +162,86 @@ namespace CombatDemo
             }
 
             return isValid;
+        }
+
+        private bool ConfigureCombatantLayers()
+        {
+            int playerLayer = LayerMask.NameToLayer(PlayerLayerName);
+            int enemyLayer = LayerMask.NameToLayer(EnemyLayerName);
+            if (playerLayer < 0 || enemyLayer < 0)
+            {
+                Debug.LogError($"[CombatDemo] Required layers are missing - player: {playerLayer}, enemy: {enemyLayer}.");
+                return false;
+            }
+
+            SetLayerRecursively(_player, playerLayer);
+            SetLayerRecursively(_enemy, enemyLayer);
+
+            bool playerConfigured = ConfigureWeaponTargetLayers(_player, enemyLayer);
+            bool enemyConfigured = ConfigureWeaponTargetLayers(_enemy, playerLayer);
+            if (!playerConfigured || !enemyConfigured)
+            {
+                return false;
+            }
+
+            return ValidateCombatantLayers(playerLayer, enemyLayer);
+        }
+
+        private bool ConfigureWeaponTargetLayers(GameObject combatant, int targetLayer)
+        {
+            WeaponManager[] weaponManagers = combatant.GetComponentsInChildren<WeaponManager>(true);
+            if (weaponManagers.Length == 0)
+            {
+                Debug.LogError($"[CombatDemo] WeaponManager is missing on {combatant.name}.");
+                return false;
+            }
+
+            LayerMask targetMask = 1 << targetLayer;
+            foreach (WeaponManager weaponManager in weaponManagers)
+            {
+                weaponManager.SetTargetLayers(targetMask);
+            }
+
+            return true;
+        }
+
+        private bool ValidateCombatantLayers(int playerLayer, int enemyLayer)
+        {
+            bool playerLayerValid = _player.layer == playerLayer;
+            bool enemyLayerValid = _enemy.layer == enemyLayer;
+            bool playerCanHitEnemy = HasWeaponTargetLayer(_player, enemyLayer);
+            bool enemyCanHitPlayer = HasWeaponTargetLayer(_enemy, playerLayer);
+
+            if (playerLayerValid && enemyLayerValid && playerCanHitEnemy && enemyCanHitPlayer)
+            {
+                return true;
+            }
+
+            Debug.LogError($"[CombatDemo] Layer validation failed - player layer: {playerLayerValid}, enemy layer: {enemyLayerValid}, " +
+                           $"player targets enemy: {playerCanHitEnemy}, enemy targets player: {enemyCanHitPlayer}.");
+            return false;
+        }
+
+        private static bool HasWeaponTargetLayer(GameObject combatant, int targetLayer)
+        {
+            foreach (WeaponManager weaponManager in combatant.GetComponentsInChildren<WeaponManager>(true))
+            {
+                if (weaponManager.TargetsLayer(targetLayer))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static void SetLayerRecursively(GameObject gameObject, int layer)
+        {
+            gameObject.layer = layer;
+            foreach (Transform child in gameObject.transform)
+            {
+                SetLayerRecursively(child.gameObject, layer);
+            }
         }
 
         private void BuildHud()

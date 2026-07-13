@@ -21,6 +21,7 @@ namespace Character
         
         private HashSet<string> _tags;
         private ActionContext _context;
+        private HealthComponent _health;
         private Dictionary<ActionBase, float> _cooldownEndTimes = new();
         
         private void Awake()
@@ -31,8 +32,27 @@ namespace Character
             if (_movement == null) _movement = GetComponent<CharacterMovement>();
             if (_stamina == null) _stamina = GetComponent<StaminaComponent>();
             if (_navMeshAgent == null) _navMeshAgent = GetComponent<NavMeshAgent>();
+            _health = GetComponent<HealthComponent>();
             
             _context = new ActionContext(gameObject);
+        }
+
+        private void OnEnable()
+        {
+            if (_health != null)
+            {
+                _health.OnDeath += HandleOwnerDeath;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (_health != null)
+            {
+                _health.OnDeath -= HandleOwnerDeath;
+            }
+
+            CancelAllActions();
         }
         
         public ActionContext GetContext() => _context;
@@ -98,7 +118,7 @@ namespace Character
             
             if (action is DurationAction durationAction)
             {
-                StartCoroutine(RunDurationAction(active, durationAction));
+                active.Coroutine = StartCoroutine(RunDurationActionInternal(active, durationAction));
             }
             else
             {
@@ -109,15 +129,10 @@ namespace Character
             return true;
         }
         
-        private IEnumerator RunDurationAction(ActiveAction active, DurationAction action)
-        {
-            active.Coroutine = StartCoroutine(RunDurationActionInternal(active, action));
-            yield break;
-        }
-        
         private IEnumerator RunDurationActionInternal(ActiveAction active, DurationAction action)
         {
             yield return action.ExecuteOverTime(_context, active);
+            action.OnCompleted(_context, active);
             _activeActions.Remove(active);
 
             RestoreNavMeshAgent();
@@ -129,9 +144,24 @@ namespace Character
             {
                 StopCoroutine(activeAction.Coroutine);
             }
+
+            activeAction.Action.OnCancelled(_context, activeAction);
             _activeActions.Remove(activeAction);
 
             RestoreNavMeshAgent();
+        }
+
+        private void HandleOwnerDeath()
+        {
+            CancelAllActions();
+        }
+
+        private void CancelAllActions()
+        {
+            for (int i = _activeActions.Count - 1; i >= 0; i--)
+            {
+                StopAction(_activeActions[i]);
+            }
         }
 
         private void RestoreNavMeshAgent()
