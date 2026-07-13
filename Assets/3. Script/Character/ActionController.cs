@@ -80,7 +80,13 @@ namespace Character
 
             if (_navMeshAgent != null && _navMeshAgent.enabled)
             {
+                _navMeshAgent.isStopped = true;
                 _navMeshAgent.enabled = false;
+
+                if (_animator != null && action is Actions.ComboAction)
+                {
+                    _animator.applyRootMotion = true;
+                }
             }
 
             action.Execute(_context);
@@ -97,6 +103,7 @@ namespace Character
             else
             {
                 _activeActions.Remove(active);
+                RestoreNavMeshAgent();
             }
             
             return true;
@@ -113,11 +120,7 @@ namespace Character
             yield return action.ExecuteOverTime(_context, active);
             _activeActions.Remove(active);
 
-            if (_activeActions.Count == 0 && _navMeshAgent != null && !_navMeshAgent.enabled)
-            {
-                _navMeshAgent.Warp(transform.position);
-                _navMeshAgent.enabled = true;
-            }
+            RestoreNavMeshAgent();
         }
         
         private void StopAction(ActiveAction activeAction)
@@ -128,10 +131,27 @@ namespace Character
             }
             _activeActions.Remove(activeAction);
 
-            if (_activeActions.Count == 0 && _navMeshAgent != null && !_navMeshAgent.enabled)
+            RestoreNavMeshAgent();
+        }
+
+        private void RestoreNavMeshAgent()
+        {
+            if (_activeActions.Count != 0 || _navMeshAgent == null || _navMeshAgent.enabled)
             {
-                _navMeshAgent.Warp(transform.position);
-                _navMeshAgent.enabled = true;
+                return;
+            }
+
+            if (!NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 1.5f, NavMesh.AllAreas))
+            {
+                return;
+            }
+
+            _navMeshAgent.enabled = true;
+            _navMeshAgent.Warp(hit.position);
+
+            if (_animator != null)
+            {
+                _animator.applyRootMotion = false;
             }
         }
         

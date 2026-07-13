@@ -21,9 +21,14 @@ public class MainMenuController : MonoBehaviour
         _cameraObjectAnimator.SetFloat("CameraPos", num);
     }
 
+    public void LoadCombatDemo()
+    {
+        GameActions.onSceneLoadRequest?.Invoke("CombatDemo");
+    }
+
     public void LoadVersusScene()
     {
-        GameActions.onSceneLoadRequest?.Invoke("VersusScene");
+        LoadCombatDemo();
     }
 
     public void ExitButton()

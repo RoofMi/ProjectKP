@@ -14,7 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _contextKey: distanceNormalized
   _comparison: 0
-  _threshold: 0.4
-  _trueBranch: {fileID: 11400000, guid: 831ed96c078d1a44198cd345885cf2b1, type: 2}
+  _threshold: 0.12
+  _useDirectValues: 1
+  _trueValue: 0.75
+  _falseValue: 0
+  _trueBranch: {fileID: 0}
   _falseBranch: {fileID: 0}
   _defaultValue: 0

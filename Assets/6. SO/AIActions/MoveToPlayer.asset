@@ -15,3 +15,4 @@ MonoBehaviour:
   _targetTag: 
   _consideration: {fileID: 11400000, guid: 23f23615b1068ed499f2f6be2d66dfc8, type: 2}
   priority: 10
+  combatStopDistance: 1.65

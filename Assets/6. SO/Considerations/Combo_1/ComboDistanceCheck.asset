@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d77081e85deec414d9bd350270afb13f, type: 3}
   m_Name: ComboDistanceCheck
   m_EditorClassIdentifier: 
-  _contextKey: distanceNormalized
-  _comparison: 3
-  _threshold: 0.35
-  _useDirectValues: 0
+  _contextKey: inMeleeRange
+  _comparison: 0
+  _threshold: 0.5
+  _useDirectValues: 1
   _trueValue: 1
   _falseValue: 0
-  _trueBranch: {fileID: 11400000, guid: 244c1f8048311d94ca77b9ac6d85d528, type: 2}
+  _trueBranch: {fileID: 0}
   _falseBranch: {fileID: 0}
   _defaultValue: 0

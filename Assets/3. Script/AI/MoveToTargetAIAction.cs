@@ -5,6 +5,8 @@ namespace AI
     [CreateAssetMenu(menuName = "UtilityAI/Actions/MoveToTargetAction")]
     public class MoveToTargetAIAction : AIAction
     {
+        [SerializeField, Min(0f)] private float combatStopDistance = 1.65f;
+
         private void Reset()
         {
             priority = 5;
@@ -16,7 +18,7 @@ namespace AI
         
         public override void Execute(AIContext context)
         {
-            context.SetAgentDestinationToTarget();
+            context.SetAgentDestinationToTarget(combatStopDistance);
         }
     }
 }

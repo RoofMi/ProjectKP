@@ -27,9 +27,14 @@ namespace AI
         public const string TargetAttacking = "targetAttacking";  // bool
         public const string TargetAirborne = "targetAirborne";    // bool
         public const string TargetInHitstun = "targetInHitstun";  // bool: target is stunned/hit
+
+        public const string TargetRecovery = "targetRecovery";
+        public const string TimeInMeleeRange = "timeInMeleeRange";
+        public const string TargetOpportunity = "targetOpportunity";
         
         // === Time Information (시간 정보) - 2개 ===
         public const string CombatDuration = "combatDuration";    // float: seconds since combat start
         public const string TimeSinceLastAction = "timeSinceLastAction"; // float: seconds since last action
+        public const string TimeSinceLastDash = "timeSinceLastDash";
     }
 }

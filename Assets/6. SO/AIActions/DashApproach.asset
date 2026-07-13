@@ -17,3 +17,7 @@ MonoBehaviour:
   priority: 10
   wrappedAction: {fileID: 11400000, guid: f4d3dae09178cb14c87e1fa302e5ad9a, type: 2}
   invertDirection: 0
+  maxTargetDistance: 14
+  minTargetDistance: 2.4
+  minimumReuseDelay: 4
+  requiresTargetOpportunity: 1

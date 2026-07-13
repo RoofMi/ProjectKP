@@ -25,6 +25,11 @@ namespace AI
         
         [Header("Combat Events")]
         [SerializeField] private CombatEventChannel _combatEventChannel;
+
+        [Header("Tactical Decision")]
+        [SerializeField, Min(0f)] private float actionCommitmentDuration = 0.25f;
+        [SerializeField, Min(0f)] private float targetRecoveryDuration = 0.65f;
+        [SerializeField, Min(0f)] private float closeRangePatience = 0.35f;
         
         private AIContext _context;
         private AIAction _currentAction;
@@ -38,6 +43,12 @@ namespace AI
         // Hit confirmation tracking
         private bool _hitConfirmed;
         private const float HIT_CONFIRM_DURATION = 0.3f; // 히트 확인 유지 시간
+
+        private bool _wasTargetAttacking;
+        private float _timeInMeleeRange;
+        private float _lastTargetAttackEndTime = float.NegativeInfinity;
+        private float _lastDashTime = float.NegativeInfinity;
+        private float _nextActionChangeTime;
 
         private void Awake()
         {
@@ -84,6 +95,11 @@ namespace AI
             _lastActionTime = Time.time;
         }
 
+        public void NotifyDashExecuted()
+        {
+            _lastDashTime = Time.time;
+        }
+
         private void Update()
         {
             UpdateContext();
@@ -101,19 +117,21 @@ namespace AI
             }
             
             // Normal execution for non-blocking actions
-            _currentAction?.Execute(_context);
             
             // Evaluate new action periodically
             if (Time.time >= _nextDecisionTime)
             {
                 AIAction bestAction = SelectBestAction();
                 
-                if (bestAction != _currentAction)
+                if (bestAction != _currentAction &&
+                    (_currentAction == null || Time.time >= _nextActionChangeTime))
                 {
                     RecordDecisionChange(bestAction); // 디버깅용 히스토리 기록
                     _currentAction = bestAction;
+                    _nextActionChangeTime = Time.time + actionCommitmentDuration;
                 }
                 
+                _currentAction?.Execute(_context);
                 _nextDecisionTime = Time.time + decisionInterval;
             }
         }
@@ -138,6 +156,11 @@ namespace AI
 
         private void UpdateContext()
         {
+            if (_playerCharacter == null)
+            {
+                _timeInMeleeRange = 0f;
+            }
+
             if (_context.Health != null)
             {
                 _context.SetData(ContextKeys.Health, _context.Health.HealthPercentage);
@@ -164,7 +187,16 @@ namespace AI
                 
                 _context.SetData(ContextKeys.DistanceToTarget, distance);
                 _context.SetData(ContextKeys.DistanceNormalized, Mathf.Clamp01(distance / 20f));
-                _context.SetData(ContextKeys.InMeleeRange, distance <= 2f ? 1.0f : 0.0f);
+                bool isInMeleeRange = distance <= 2f;
+                _context.SetData(ContextKeys.InMeleeRange, isInMeleeRange ? 1.0f : 0.0f);
+                if (isInMeleeRange)
+                {
+                    _timeInMeleeRange += Time.deltaTime;
+                }
+                else
+                {
+                    _timeInMeleeRange = 0f;
+                }
             }
             
             if (_context.ComboManager != null)
@@ -204,22 +236,18 @@ namespace AI
                 _context.SetData(ContextKeys.TargetHealth, 0f);
             }
             
-            if (_context.TargetStamina != null)
-            {
-                _context.SetData(ContextKeys.TargetStamina, _context.TargetStamina.StaminaPercentage);
-            }
-            else
-            {
-                _context.SetData(ContextKeys.TargetStamina, 0f);
-            }
-            
+            bool hasTargetStamina = _context.TargetStamina != null;
+            float targetStamina = hasTargetStamina ? _context.TargetStamina.StaminaPercentage : 0f;
+            _context.SetData(ContextKeys.TargetStamina, targetStamina);
+
+            bool targetAttacking = false;
             if (_context.TargetActionController != null)
             {
-                _context.SetData(ContextKeys.TargetAttacking, 
-                    _context.TargetActionController.HasTag(ActionTags.Attacking) ? 1.0f : 0.0f);
-                _context.SetData(ContextKeys.TargetAirborne, 
+                targetAttacking = _context.TargetActionController.HasTag(ActionTags.Attacking);
+                _context.SetData(ContextKeys.TargetAttacking, targetAttacking ? 1.0f : 0.0f);
+                _context.SetData(ContextKeys.TargetAirborne,
                     _context.TargetActionController.HasTag(ActionTags.Airborne) ? 1.0f : 0.0f);
-                _context.SetData(ContextKeys.TargetInHitstun, 
+                _context.SetData(ContextKeys.TargetInHitstun,
                     _context.TargetActionController.HasTag(ActionTags.Stunned) ? 1.0f : 0.0f);
             }
             else
@@ -228,12 +256,29 @@ namespace AI
                 _context.SetData(ContextKeys.TargetAirborne, 0.0f);
                 _context.SetData(ContextKeys.TargetInHitstun, 0.0f);
             }
+
+            if (_wasTargetAttacking && !targetAttacking)
+            {
+                _lastTargetAttackEndTime = Time.time;
+            }
+
+            _wasTargetAttacking = targetAttacking;
+            bool targetRecovering = Time.time - _lastTargetAttackEndTime <= targetRecoveryDuration;
+            bool targetExhausted = hasTargetStamina && targetStamina <= 0.25f;
+            bool targetOpportunity = targetRecovering || targetExhausted || _timeInMeleeRange >= closeRangePatience;
+
+            _context.SetData(ContextKeys.TargetRecovery, targetRecovering ? 1.0f : 0.0f);
+            _context.SetData(ContextKeys.TimeInMeleeRange, _timeInMeleeRange);
+            _context.SetData(ContextKeys.TargetOpportunity, targetOpportunity ? 1.0f : 0.0f);
             
             float combatDuration = Time.time - _combatStartTime;
             _context.SetData(ContextKeys.CombatDuration, combatDuration);
             
             float timeSinceLastAction = Time.time - _lastActionTime;
             _context.SetData(ContextKeys.TimeSinceLastAction, timeSinceLastAction);
+
+            float timeSinceLastDash = Time.time - _lastDashTime;
+            _context.SetData(ContextKeys.TimeSinceLastDash, timeSinceLastDash);
         }
         
         #region Debug Support
@@ -323,6 +368,8 @@ namespace AI
             // Distance & Position
             debugInfo["DistanceToTarget"] = _context.GetData<float>(ContextKeys.DistanceToTarget);
             debugInfo["InMeleeRange"] = _context.GetData<float>(ContextKeys.InMeleeRange) > 0.5f;
+            debugInfo["TimeInMeleeRange"] = _context.GetData<float>(ContextKeys.TimeInMeleeRange);
+            debugInfo["TimeSinceLastDash"] = _context.GetData<float>(ContextKeys.TimeSinceLastDash);
             
             // Combo Info
             debugInfo["InCombo"] = _context.GetData<float>(ContextKeys.InCombo) > 0.5f;
@@ -333,6 +380,8 @@ namespace AI
             // Target Info
             debugInfo["TargetHealth"] = _context.GetData<float>(ContextKeys.TargetHealth);
             debugInfo["TargetAttacking"] = _context.GetData<float>(ContextKeys.TargetAttacking) > 0.5f;
+            debugInfo["TargetRecovery"] = _context.GetData<float>(ContextKeys.TargetRecovery) > 0.5f;
+            debugInfo["TargetOpportunity"] = _context.GetData<float>(ContextKeys.TargetOpportunity) > 0.5f;
             
             return debugInfo;
         }

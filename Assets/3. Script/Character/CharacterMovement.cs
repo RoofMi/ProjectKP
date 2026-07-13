@@ -31,6 +31,7 @@ namespace Character
         private CharacterController _characterController;
         private ActionController _actionController;
         private NavMeshAgent _navMeshAgent;  // AI 지원
+        private Animator _animator;
         
         private Vector2 _inputVector;
         private bool IsAIControlled => _navMeshAgent != null;
@@ -42,19 +43,42 @@ namespace Character
             _characterController = GetComponent<CharacterController>();
             _actionController = GetComponent<ActionController>();
             _navMeshAgent = GetComponent<NavMeshAgent>();
+            _animator = GetComponent<Animator>();
             
             // NavMeshAgent 설정 (AI 캐릭터인 경우)
             if (_navMeshAgent != null)
             {
                 // 이미 AIContext에서 설정했지만 안전을 위해 재확인
-                _navMeshAgent.updatePosition = false;
+                _navMeshAgent.updatePosition = true;
                 _navMeshAgent.updateRotation = true;
             }
         }
         
         private void Update()
         {
+            if (IsAIControlled && _navMeshAgent.enabled)
+            {
+                UpdateAgentLocomotion();
+                return;
+            }
+
             UpdateMovement(_inputVector, Time.deltaTime);
+        }
+
+        private void UpdateAgentLocomotion()
+        {
+            if (_animator == null)
+            {
+                return;
+            }
+
+            float speed = _navMeshAgent.speed > 0f
+                ? Mathf.Clamp01(_navMeshAgent.velocity.magnitude / _navMeshAgent.speed)
+                : 0f;
+
+            _animator.applyRootMotion = false;
+            _animator.SetFloat(AnimationHashes.Speed, speed);
+            _animator.SetBool(AnimationHashes.IsGrounded, true);
         }
         
         public void SetInput(Vector2 input)
@@ -65,29 +89,11 @@ namespace Character
         public void UpdateMovement(Vector2 inputValue, float deltaTime)
         {
             bool isAttacking = _actionController != null && _actionController.HasTag(ActionTags.Attacking);
-            Vector3 moveDirection;
-
-            if (IsAIControlled && _navMeshAgent != null && _navMeshAgent.enabled && _navMeshAgent.hasPath)
-            {
-                Vector3 aiVelocity = _navMeshAgent.desiredVelocity;
-                moveDirection = new Vector3(aiVelocity.x, 0, aiVelocity.z).normalized;
-            }
-            else
-            {
-                moveDirection = GetCameraAlignedDirection(inputValue);
-            }
+            Vector3 moveDirection = GetCameraAlignedDirection(inputValue);
 
             if (!isAttacking)
             {
-                if (IsAIControlled && _navMeshAgent != null && _navMeshAgent.enabled && _navMeshAgent.hasPath)
-                {
-                    _horizontalVelocity = _navMeshAgent.desiredVelocity;
-                    _horizontalVelocity.y = 0;
-                }
-                else
-                {
-                    _horizontalVelocity = moveDirection * MoveSpeed;
-                }
+                _horizontalVelocity = moveDirection * MoveSpeed;
             }
             else
             {
@@ -117,7 +123,7 @@ namespace Character
             moveVelocity.y = _verticalVelocity;
             _characterController.Move(moveVelocity * deltaTime);
         }
-        
+
         public void UpdateRotation(float deltaTime, bool bInstantRotation = false)
         {
             Vector3 horizontalVelocity = _horizontalVelocity;
@@ -187,6 +193,11 @@ namespace Character
 
         public float GetSpeed()
         {
+            if (IsAIControlled && _navMeshAgent.enabled)
+            {
+                return _navMeshAgent.velocity.magnitude;
+            }
+
             return _horizontalVelocity.magnitude;
         }
         

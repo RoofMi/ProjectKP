@@ -28,6 +28,10 @@ namespace AI
         private ActionController _targetActionController;
         private CharacterMovement _targetMovement;
 
+        private bool _hasAgentDestination;
+        private Vector3 _lastAgentDestination;
+        private float _lastStoppingDistance;
+
         private readonly Dictionary<string, object> _data = new();
 
         public AIContext(AIBrain brain, Transform playerCharacter)
@@ -50,10 +54,10 @@ namespace AI
             _movement = brain.GetComponent<CharacterMovement>();
             
             // NavMeshAgent와 CharacterController 통합 설정
-            if (_agent != null && brain.GetComponent<CharacterController>() != null)
+            if (_agent != null)
             {
                 // NavMeshAgent는 경로 계산만, CharacterController가 실제 이동 담당
-                _agent.updatePosition = false;
+                _agent.updatePosition = true;
                 _agent.updateRotation = true;
             }
             
@@ -90,7 +94,33 @@ namespace AI
         // 키 존재 여부 확인
         public bool HasData(string key) => _data.ContainsKey(key);
 
-        public void SetAgentDestinationToTarget() => Agent.SetDestination(_currentTarget.position);
+        public void SetAgentDestinationToTarget(float stoppingDistance = 0f)
+        {
+            if (_agent == null || _currentTarget == null || !_agent.isActiveAndEnabled || !_agent.isOnNavMesh)
+            {
+                return;
+            }
+
+            bool targetMoved = !_hasAgentDestination ||
+                               (_lastAgentDestination - _currentTarget.position).sqrMagnitude > 0.01f;
+            bool stoppingDistanceChanged = !Mathf.Approximately(_lastStoppingDistance, stoppingDistance);
+            bool requiresPath = !_agent.hasPath && !_agent.pathPending;
+
+            _agent.stoppingDistance = stoppingDistance;
+            _agent.isStopped = false;
+
+            if (!targetMoved && !stoppingDistanceChanged && !requiresPath)
+            {
+                return;
+            }
+
+            if (_agent.SetDestination(_currentTarget.position))
+            {
+                _hasAgentDestination = true;
+                _lastAgentDestination = _currentTarget.position;
+                _lastStoppingDistance = stoppingDistance;
+            }
+        }
         
         // 액션 쿨다운 체크 메서드
         public bool IsActionOnCooldown(Actions.Core.ActionBase action)

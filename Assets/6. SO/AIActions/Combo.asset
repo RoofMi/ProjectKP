@@ -14,5 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _targetTag: 
   _consideration: {fileID: 11400000, guid: 244c1f8048311d94ca77b9ac6d85d528, type: 2}
-  priority: 30
+  priority: 50
   reactionTime: 0.2
+  minFacingDot: 0.65
+  requiresTargetOpportunity: 1

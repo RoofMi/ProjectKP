@@ -13,6 +13,17 @@ namespace AI
         [Header("Dash Settings")]
         [Tooltip("For dash actions: if true, dash away from target; if false, dash towards target")]
         [SerializeField] private bool invertDirection;
+
+        [Min(0f)]
+        [SerializeField] private float maxTargetDistance;
+
+        [Min(0f)]
+        [SerializeField] private float minTargetDistance;
+
+        [Min(0f)]
+        [SerializeField] private float minimumReuseDelay;
+
+        [SerializeField] private bool requiresTargetOpportunity;
         
         // Use wrapped action's priority if available
         public override int Priority => wrappedAction != null ? wrappedAction.priority : base.Priority;
@@ -25,18 +36,48 @@ namespace AI
         // Override CalculateUtility to check cooldown
         public override float CalculateUtility(AIContext context)
         {
-            // If the wrapped action is on cooldown, return 0 utility
+            if (context.CurrentTarget == null)
+            {
+                return 0f;
+            }
+
+            float targetDistance = Vector3.Distance(context.Brain.transform.position, context.CurrentTarget.position);
+            if (minTargetDistance > 0f && targetDistance < minTargetDistance)
+            {
+                return 0f;
+            }
+
+            if (maxTargetDistance > 0f && targetDistance > maxTargetDistance)
+            {
+                return 0f;
+            }
+
+            if (requiresTargetOpportunity && context.GetData<float>(ContextKeys.TargetOpportunity) < 0.5f)
+            {
+                return 0f;
+            }
+
+            if (minimumReuseDelay > 0f &&
+                context.GetData<float>(ContextKeys.TimeSinceLastDash) < minimumReuseDelay)
+            {
+                return 0f;
+            }
+
             if (wrappedAction != null && context.IsActionOnCooldown(wrappedAction))
             {
                 return 0f;
             }
-            
-            // Otherwise use the normal consideration evaluation
+
             return base.CalculateUtility(context);
         }
         
         public override void Execute(AIContext context)
         {
+            if (CalculateUtility(context) <= 0f)
+            {
+                return;
+            }
+
             if (wrappedAction == null)
             {
                 Debug.LogWarning("WrapperAIAction: No wrapped action assigned!");
@@ -95,6 +136,10 @@ namespace AI
             {
                 // Force re-evaluation on next frame by setting a flag in context
                 context.SetData("ForceReEvaluation", true);
+            }
+            else if (wrappedAction is Actions.DashAction)
+            {
+                context.Brain.NotifyDashExecuted();
             }
         }
     }
