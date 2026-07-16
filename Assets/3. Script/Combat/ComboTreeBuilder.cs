@@ -54,9 +54,7 @@ namespace Combat
                 {
                     if (node.StepNode == stepRef.ComboNode &&
                         node.DamageMultiplier == stepRef.DamageMultiplier &&
-                        node.ApplyKnockback == stepRef.ApplyKnockback &&
-                        node.KnockbackHorizontalForce == stepRef.KnockbackHorizontalForce &&
-                        node.KnockbackVerticalForce == stepRef.KnockbackVerticalForce &&
+                        node.HitReaction == stepRef.HitReaction &&
                         node.WindowStart == stepRef.WindowStart &&
                         node.WindowEnd == stepRef.WindowEnd &&
                         node.StaminaCost == stepRef.StaminaCost)

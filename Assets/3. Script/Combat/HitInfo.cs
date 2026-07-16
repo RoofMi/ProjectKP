@@ -13,27 +13,24 @@ namespace Combat
         // 2. Damage Information
         public float damage;
 
-        // 3. Knockback Information
-        public bool applyKnockback;
-        public float knockbackHorizontalForce;
-        public float knockbackVerticalForce;
+        // 3. Reaction Information
+        public Vector3 attackDirection;
+        public HitReactionProfile hitReactionProfile;
 
         public HitInfo(
             GameObject attacker,
             GameObject target,
             Vector3 hitPoint,
+            Vector3 attackDirection,
             float damage,
-            bool applyKnockback,
-            float knockbackHorizontalForce,
-            float knockbackVerticalForce)
+            HitReactionProfile hitReactionProfile)
         {
             this.attacker = attacker;
             this.target = target;
             this.hitPoint = hitPoint;
+            this.attackDirection = attackDirection;
             this.damage = damage;
-            this.applyKnockback = applyKnockback;
-            this.knockbackHorizontalForce = knockbackHorizontalForce;
-            this.knockbackVerticalForce = knockbackVerticalForce;
+            this.hitReactionProfile = hitReactionProfile;
         }
     }
 }

@@ -1082,7 +1082,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 500
   currentHealth: 500
-  gravity: 25
 --- !u!143 &1428772058
 CharacterController:
   m_ObjectHideFlags: 0

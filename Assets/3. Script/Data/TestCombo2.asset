@@ -17,36 +17,28 @@ MonoBehaviour:
   - ComboNode: {fileID: 11400000, guid: 7a9a368c18f0c1d45a6e39057eb77e0c, type: 2}
     InputKey: LightAttack
     DamageMultiplier: 1
-    ApplyKnockback: 1
-    KnockbackHorizontalForce: 10
-    KnockbackVerticalForce: 5
+    HitReaction: {fileID: 11400000, guid: a1b2c3d4e5f6478899aabbccddeeff01, type: 2}
     WindowStart: 0.5
     WindowEnd: 0.9
     StaminaCost: 10
   - ComboNode: {fileID: 11400000, guid: 834abeb4696af994ab3654ace8356e82, type: 2}
     InputKey: LightAttack
     DamageMultiplier: 1
-    ApplyKnockback: 1
-    KnockbackHorizontalForce: 10
-    KnockbackVerticalForce: 5
+    HitReaction: {fileID: 11400000, guid: a1b2c3d4e5f6478899aabbccddeeff01, type: 2}
     WindowStart: 0.5
     WindowEnd: 0.9
     StaminaCost: 10
   - ComboNode: {fileID: 11400000, guid: 504c3c109f82bde4ebb602e030a2ea92, type: 2}
     InputKey: LightAttack
     DamageMultiplier: 1
-    ApplyKnockback: 1
-    KnockbackHorizontalForce: 10
-    KnockbackVerticalForce: 5
+    HitReaction: {fileID: 11400000, guid: a1b2c3d4e5f6478899aabbccddeeff01, type: 2}
     WindowStart: 0.5
     WindowEnd: 0.9
     StaminaCost: 10
   - ComboNode: {fileID: 11400000, guid: 5dd4f28fa698b214ba484fbb6a18f737, type: 2}
     InputKey: HeavyAttack
     DamageMultiplier: 1
-    ApplyKnockback: 1
-    KnockbackHorizontalForce: 10
-    KnockbackVerticalForce: 5
+    HitReaction: {fileID: 11400000, guid: b1c2d3e4f5a6478899aabbccddeeff02, type: 2}
     WindowStart: 0.5
     WindowEnd: 0.9
     StaminaCost: 10

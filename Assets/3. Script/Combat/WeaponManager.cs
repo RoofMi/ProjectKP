@@ -130,9 +130,7 @@ namespace Combat
                 hitbox.ConfigureAttack(
                     gameObject,
                     damage,
-                    comboNode.ApplyKnockback,
-                    comboNode.KnockbackHorizontalForce,
-                    comboNode.KnockbackVerticalForce);
+                    comboNode.HitReaction);
             }
 
             _hasAttackData = true;

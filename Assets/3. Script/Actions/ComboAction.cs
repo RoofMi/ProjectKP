@@ -13,8 +13,8 @@ namespace Actions
         [Header("Combo Settings")]
         [SerializeField] private float crossFadeDuration = 0.1f;
         [SerializeField] private float animationEndThreshold = 0.95f;
-        
-        private bool _isInComboWindow;
+        [SerializeField, Range(0f, 180f)] private float maxAssistAngle = 45f;
+        [SerializeField, Min(0f)] private float maxAssistDistance = 3f;
         
         public override IEnumerator ExecuteOverTime(ActionContext context, ActiveAction activeAction)
         {
@@ -38,27 +38,11 @@ namespace Actions
             }
             
             context.ActionController.AddTag(ActionTags.Attacking);
-            _isInComboWindow = false;
             var movement = context.Movement;
             
-            if (movement != null && activeAction.InputDirection.sqrMagnitude > 0.01f)
+            if (movement != null && !TryRotateTowardComboTarget(context, movement))
             {
-                Vector3 attackDirection = new Vector3(activeAction.InputDirection.x, 0f, activeAction.InputDirection.y);
-                
-                if (movement.CameraTransform != null)
-                {
-                    attackDirection = movement.CameraTransform.TransformDirection(attackDirection);
-                }
-                else
-                {
-                    Debug.LogWarning("[ComboAction] CameraTransform is null! Using world direction.");
-                }
-                
-                attackDirection.y = 0f;
-                movement.SetRotationToDirection(attackDirection);
-            }
-            else
-            {
+                RotateTowardInput(movement, activeAction.InputDirection);
             }
             string animationName = comboNode.StepNode.AnimClip.name;
             
@@ -107,13 +91,11 @@ namespace Actions
                 if (inWindow && !comboWindowActive)
                 {
                     comboWindowActive = true;
-                    _isInComboWindow = true;
                     context.ComboManager.SetComboWindow(true);
                 }
                 else if (!inWindow && comboWindowActive)
                 {
                     comboWindowActive = false;
-                    _isInComboWindow = false;
                     context.ComboManager.SetComboWindow(false);
                 }
                 if (normalizedTime >= animationEndThreshold)
@@ -129,14 +111,14 @@ namespace Actions
         
         public override bool CanExecute(ActionContext context)
         {
-            return CheckTags(context);
+            return CheckTags(context) && !context.ActionController.HasTag(ActionTags.Stunned);
         }
         
         public override bool CanBeCancelledBy(ActionBase other)
         {
             if (other is ComboAction)
             {
-                return _isInComboWindow;
+                return true;
             }
             return base.CanBeCancelledBy(other);
         }
@@ -161,12 +143,54 @@ namespace Actions
             }
         }
 
+        private bool TryRotateTowardComboTarget(ActionContext context, CharacterMovement movement)
+        {
+            Transform target = context.ComboManager?.ComboTarget;
+            if (target == null)
+            {
+                return false;
+            }
+
+            Vector3 direction = target.position - context.Owner.transform.position;
+            direction.y = 0f;
+
+            if (direction.sqrMagnitude > maxAssistDistance * maxAssistDistance ||
+                direction.sqrMagnitude <= Mathf.Epsilon ||
+                Vector3.Angle(context.Owner.transform.forward, direction) > maxAssistAngle)
+            {
+                return false;
+            }
+
+            movement.SetRotationToDirection(direction);
+            return true;
+        }
+
+        private static void RotateTowardInput(CharacterMovement movement, Vector2 inputDirection)
+        {
+            if (inputDirection.sqrMagnitude <= 0.01f)
+            {
+                return;
+            }
+
+            Vector3 attackDirection = new Vector3(inputDirection.x, 0f, inputDirection.y);
+            if (movement.CameraTransform != null)
+            {
+                attackDirection = movement.CameraTransform.TransformDirection(attackDirection);
+            }
+            else
+            {
+                Debug.LogWarning("[ComboAction] CameraTransform is null! Using world direction.");
+            }
+
+            attackDirection.y = 0f;
+            movement.SetRotationToDirection(attackDirection);
+        }
+
         private void ResetCombatState(ActionContext context)
         {
             context.ActionController?.RemoveTag(ActionTags.Attacking);
             context.ComboManager?.SetComboWindow(false);
             context.WeaponManager?.ResetAttackState();
-            _isInComboWindow = false;
         }
     }
 }

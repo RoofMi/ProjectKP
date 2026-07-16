@@ -162,6 +162,7 @@ MonoBehaviour:
   gravity: 18
   rotationSpeed: 10
   <CameraTransform>k__BackingField: {fileID: 0}
+  comboContactPadding: 0.05
   _gravityEnabled: 1
 --- !u!114 &1394417044268356225
 MonoBehaviour:
@@ -221,7 +222,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 100
   currentHealth: 100
-  gravity: 25
 --- !u!114 &8291677710790064781
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -282,6 +282,7 @@ MonoBehaviour:
   _animator: {fileID: 1846451363874044454}
   _movement: {fileID: 1298929868636430338}
   _stamina: {fileID: 8291677710790064781}
+  _hitReactionAction: {fileID: 11400000, guid: 6a00e4fde22f4bd79e2e732668d1b632, type: 2}
   _activeActions: []
   _currentTags:
   - Grounded

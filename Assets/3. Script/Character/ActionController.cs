@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using Actions;
 using Actions.Core;
 using Character.Core;
+using Combat;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -14,6 +16,9 @@ namespace Character
         [SerializeField] private CharacterMovement _movement;
         [SerializeField] private StaminaComponent _stamina;
         [SerializeField] private NavMeshAgent _navMeshAgent;
+
+        [Header("Reactions")]
+        [SerializeField] private HitReactionAction _hitReactionAction;
         
         [Header("Debug")]
         [SerializeField] private List<ActiveAction> _activeActions = new();
@@ -22,6 +27,8 @@ namespace Character
         private HashSet<string> _tags;
         private ActionContext _context;
         private HealthComponent _health;
+        private ComboManager _comboManager;
+        private PlayerInputHandler _playerInputHandler;
         private Dictionary<ActionBase, float> _cooldownEndTimes = new();
         
         private void Awake()
@@ -33,6 +40,8 @@ namespace Character
             if (_stamina == null) _stamina = GetComponent<StaminaComponent>();
             if (_navMeshAgent == null) _navMeshAgent = GetComponent<NavMeshAgent>();
             _health = GetComponent<HealthComponent>();
+            _comboManager = GetComponent<ComboManager>();
+            _playerInputHandler = GetComponent<PlayerInputHandler>();
             
             _context = new ActionContext(gameObject);
         }
@@ -42,6 +51,7 @@ namespace Character
             if (_health != null)
             {
                 _health.OnDeath += HandleOwnerDeath;
+                _health.OnHitReceived += HandleOwnerHitReceived;
             }
         }
 
@@ -50,12 +60,32 @@ namespace Character
             if (_health != null)
             {
                 _health.OnDeath -= HandleOwnerDeath;
+                _health.OnHitReceived -= HandleOwnerHitReceived;
             }
 
             CancelAllActions();
+            _movement?.CancelGroundPush();
+            _comboManager?.ResetCombo();
         }
         
         public ActionContext GetContext() => _context;
+
+        public bool TryExecuteInterrupt(ActionBase action, object data = null)
+        {
+            if (action == null)
+            {
+                Debug.LogWarning("[ActionController] Interrupt action is null!");
+                return false;
+            }
+
+            if (!action.CanExecute(_context) || IsActionOnCooldown(action))
+            {
+                return false;
+            }
+
+            CancelAllActions();
+            return TryExecuteAction(action, data);
+        }
         
         public bool TryExecuteAction(ActionBase action, object data = null)
         {
@@ -154,6 +184,32 @@ namespace Character
         private void HandleOwnerDeath()
         {
             CancelAllActions();
+            _movement?.CancelGroundPush();
+            _comboManager?.ResetCombo();
+        }
+
+        private void HandleOwnerHitReceived(HitInfo hitInfo)
+        {
+            if (_hitReactionAction == null || !IsGroundedForHitReaction())
+            {
+                return;
+            }
+
+            if (TryExecuteInterrupt(_hitReactionAction, hitInfo))
+            {
+                _comboManager?.ResetCombo();
+                _playerInputHandler?.ClearInputBuffer();
+            }
+        }
+
+        private bool IsGroundedForHitReaction()
+        {
+            if (_navMeshAgent != null && _navMeshAgent.isOnNavMesh)
+            {
+                return true;
+            }
+
+            return _movement != null && _movement.IsGrounded();
         }
 
         private void CancelAllActions()
@@ -178,6 +234,7 @@ namespace Character
 
             _navMeshAgent.enabled = true;
             _navMeshAgent.Warp(hit.position);
+            _navMeshAgent.isStopped = false;
 
             if (_animator != null)
             {

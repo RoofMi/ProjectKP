@@ -106,7 +106,6 @@ namespace Actions
                 context.Animator.applyRootMotion = false;
                 context.Movement.SetRotationToDirection(worldDashDirection);
 
-                var characterController = context.Owner.GetComponent<CharacterController>();
                 float elapsed = 0f;
                 float speed = Vector3.Distance(context.Owner.transform.position, destination) / dashDuration;
 
@@ -123,14 +122,7 @@ namespace Actions
                     Vector3 displacement = hit.position - currentPosition;
                     displacement.y = 0f;
 
-                    if (characterController != null)
-                    {
-                        characterController.Move(displacement);
-                    }
-                    else
-                    {
-                        context.Owner.transform.position = hit.position;
-                    }
+                    context.Movement.ApplyDisplacement(displacement);
 
                     elapsed += Time.deltaTime;
                     yield return null;

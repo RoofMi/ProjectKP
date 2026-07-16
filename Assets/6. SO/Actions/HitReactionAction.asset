@@ -9,18 +9,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 93666a93e3b7ef049a1cfbf5e10457dc, type: 3}
-  m_Name: ComboAction
+  m_Script: {fileID: 11500000, guid: 203818a72fb9456a8fc02f81beff131a, type: 3}
+  m_Name: HitReactionAction
   m_EditorClassIdentifier: 
-  actionName: 
+  actionName: Hit Reaction
   icon: {fileID: 0}
-  description: 
+  description: Interrupts actions and prevents control after a grounded hit.
   cooldown: 0
-  priority: 10
+  priority: 100
   staminaCost: 0
   requiredTags: []
   blockingTags: []
-  crossFadeDuration: 0.1
-  animationEndThreshold: 0.95
-  maxAssistAngle: 45
-  maxAssistDistance: 3
+  hitStunDuration: 0.9
+  crossFadeDuration: 0.05

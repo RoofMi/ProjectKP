@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using Character;
 using Actions;
+using Combat.Interfaces;
 
 namespace Combat
 {
@@ -13,6 +14,7 @@ namespace Combat
         private RuntimeComboNode _currentNode;
         private bool _isInComboWindow;
         private float _lastAttackTime;
+        private IDamageable _comboTarget;
         private int _comboDepth = 0; // 현재 콤보 깊이 추적
         private const float COMBO_TIMEOUT = 1.0f; // 콤보 타임아웃 시간
         
@@ -24,9 +26,27 @@ namespace Combat
         public RuntimeComboNode RootNode => comboTree?.Root;
         public RuntimeComboNode CurrentNode => _currentNode;
         public bool IsInComboWindow => _isInComboWindow;
+        public Transform ComboTarget
+        {
+            get
+            {
+                if (!IsValidTarget(_comboTarget))
+                {
+                    _comboTarget = null;
+                    return null;
+                }
+
+                return _comboTarget.Transform;
+            }
+        }
         
         private void Update()
         {
+            if (!IsValidTarget(_comboTarget))
+            {
+                _comboTarget = null;
+            }
+
             // 콤보 타임아웃 체크
             if (_currentNode != null && !_isInComboWindow && Time.time - _lastAttackTime > COMBO_TIMEOUT)
             {
@@ -77,6 +97,11 @@ namespace Combat
             if (_actionController == null || _comboAction == null)
             {
                 Debug.LogWarning($"[ComboManager] Missing components - ActionController: {_actionController != null}, ComboAction: {_comboAction != null}");
+                return false;
+            }
+
+            if (_actionController.HasTag(Character.Core.ActionTags.Stunned))
+            {
                 return false;
             }
 
@@ -152,6 +177,7 @@ namespace Combat
             _currentNode = null;
             _isInComboWindow = false;
             _comboDepth = 0;
+            _comboTarget = null;
         }
         
         // 콤보가 실제로 끊겼을 때 (타임아웃, 다른 액션 등) 호출
@@ -160,6 +186,28 @@ namespace Combat
             _currentNode = null;
             _isInComboWindow = false;
             _comboDepth = 0;
+            _comboTarget = null;
+        }
+
+        public void RecordHitTarget(IDamageable target)
+        {
+            if (_currentNode == null || IsValidTarget(_comboTarget))
+            {
+                return;
+            }
+
+            _comboTarget = IsValidTarget(target) ? target : null;
+        }
+
+        private static bool IsValidTarget(IDamageable target)
+        {
+            if (target == null || target is Object unityObject && unityObject == null)
+            {
+                return false;
+            }
+
+            Transform targetTransform = target.Transform;
+            return targetTransform != null && targetTransform.gameObject.activeInHierarchy && !target.IsDead;
         }
 
         public bool IsInCombo()

@@ -1114,7 +1114,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 500
   currentHealth: 500
-  gravity: 25
 --- !u!143 &1428772058
 CharacterController:
   m_ObjectHideFlags: 0
@@ -1208,6 +1207,7 @@ MonoBehaviour:
   gravity: 9.81
   rotationSpeed: 10
   <CameraTransform>k__BackingField: {fileID: 0}
+  comboContactPadding: 0.05
   _gravityEnabled: 1
 --- !u!114 &1428772065
 MonoBehaviour:
@@ -1224,6 +1224,7 @@ MonoBehaviour:
   _animator: {fileID: 1428772059}
   _movement: {fileID: 1428772064}
   _stamina: {fileID: 1428772063}
+  _hitReactionAction: {fileID: 11400000, guid: 6a00e4fde22f4bd79e2e732668d1b632, type: 2}
   _activeActions: []
   _currentTags:
   - Grounded

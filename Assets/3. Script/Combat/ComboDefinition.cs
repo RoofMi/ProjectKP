@@ -11,9 +11,7 @@ namespace Combat
         public string InputKey;
         [FormerlySerializedAs("Damage")]
         [Min(0f)] public float DamageMultiplier = 1f;
-        public bool ApplyKnockback = true;
-        [Min(0f)] public float KnockbackHorizontalForce = 10f;
-        [Min(0f)] public float KnockbackVerticalForce = 5f;
+        public HitReactionProfile HitReaction;
         public float WindowStart = 0.5f;
         public float WindowEnd = 0.9f;
         public float StaminaCost = 10f;

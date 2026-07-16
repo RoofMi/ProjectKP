@@ -85,7 +85,7 @@ namespace Character
         
         private void Update()
         {
-            if (!_actionController.HasTag(ActionTags.Dashing))
+            if (!_actionController.HasTag(ActionTags.Dashing) && !_actionController.HasTag(ActionTags.Stunned))
             {
                 _movement.UpdateRotation(Time.deltaTime);
             }
@@ -145,7 +145,7 @@ namespace Character
         
         private void OnLightAttack(InputAction.CallbackContext context)
         {
-            if (_inputBuffer != null)
+            if (_inputBuffer != null && !_actionController.HasTag(ActionTags.Stunned))
             {
                 _inputBuffer.AddInput("LightAttack");
             }
@@ -153,7 +153,7 @@ namespace Character
         
         private void OnHeavyAttack(InputAction.CallbackContext context)
         {
-            if (_inputBuffer != null)
+            if (_inputBuffer != null && !_actionController.HasTag(ActionTags.Stunned))
             {
                 _inputBuffer.AddInput("HeavyAttack");
             }
@@ -163,6 +163,12 @@ namespace Character
         {
             if (_inputBuffer == null || _comboManager == null)
                 return;
+
+            if (_actionController.HasTag(ActionTags.Stunned))
+            {
+                ClearInputBuffer();
+                return;
+            }
 
             _inputBuffer.UpdateBuffer();
             if (_inputBuffer.HasInput())

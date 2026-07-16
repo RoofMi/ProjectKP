@@ -31,9 +31,7 @@ namespace Combat
         private readonly RaycastHit[] _sweepResults = new RaycastHit[16];
         private Collider _hitboxCollider;
         private float _damage;
-        private bool _applyKnockback;
-        private float _knockbackHorizontalForce;
-        private float _knockbackVerticalForce;
+        private HitReactionProfile _hitReactionProfile;
         private bool _isActive;
         private Vector3[] _previousSweepPoints;
         private Vector3[] _currentSweepPoints;
@@ -64,24 +62,18 @@ namespace Combat
         public void ConfigureAttack(
             GameObject attacker,
             float damage,
-            bool applyKnockback,
-            float knockbackHorizontalForce,
-            float knockbackVerticalForce)
+            HitReactionProfile hitReactionProfile)
         {
             Attacker = attacker;
             _damage = Mathf.Max(0f, damage);
-            _applyKnockback = applyKnockback;
-            _knockbackHorizontalForce = Mathf.Max(0f, knockbackHorizontalForce);
-            _knockbackVerticalForce = Mathf.Max(0f, knockbackVerticalForce);
+            _hitReactionProfile = hitReactionProfile;
         }
 
         public void ClearAttackData()
         {
             Attacker = null;
             _damage = 0f;
-            _applyKnockback = false;
-            _knockbackHorizontalForce = 0f;
-            _knockbackVerticalForce = 0f;
+            _hitReactionProfile = null;
         }
 
         private void Awake()
@@ -312,10 +304,9 @@ namespace Combat
                 Attacker,
                 other.gameObject,
                 hitPoint,
+                Attacker != null ? Attacker.transform.forward : Vector3.zero,
                 _damage,
-                _applyKnockback,
-                _knockbackHorizontalForce,
-                _knockbackVerticalForce);
+                _hitReactionProfile);
 
             if (_combatEventChannel != null)
             {
