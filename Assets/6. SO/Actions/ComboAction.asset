@@ -19,7 +19,8 @@ MonoBehaviour:
   priority: 10
   staminaCost: 0
   requiredTags: []
-  blockingTags: []
+  blockingTags:
+  - Dashing
   crossFadeDuration: 0.1
   animationEndThreshold: 0.95
   maxAssistAngle: 45

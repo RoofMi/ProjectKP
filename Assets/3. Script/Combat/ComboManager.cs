@@ -129,7 +129,7 @@ namespace Combat
                 
                 // 스태미나 체크 및 사용
                 var staminaComponent = GetComponent<StaminaComponent>();
-                if (staminaComponent != null && !staminaComponent.TryUseStamina(targetNode.StaminaCost))
+                if (staminaComponent != null && !staminaComponent.CanAfford(targetNode.StaminaCost))
                 {
                     Debug.LogWarning("[ComboManager] Not enough stamina!");
                     return false;
@@ -140,6 +140,7 @@ namespace Combat
                 // TryExecuteAction이 성공했을 때만 currentNode 업데이트
                 if (result)
                 {
+                    staminaComponent?.UseStamina(targetNode.StaminaCost);
                     _currentNode = targetNode;
                     _lastAttackTime = Time.time;
                     _comboDepth++;

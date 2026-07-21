@@ -22,6 +22,7 @@ MonoBehaviour:
   blockingTags:
   - Stunned
   - Dashing
+  - Attacking
   dashSpeed: 15
   dashDuration: 0.4
   dashStartDelay: 0.1
