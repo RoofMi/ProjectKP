@@ -2,7 +2,7 @@ using Actions;
 using Character.Core;
 using Combat;
 using UnityEngine;
-using UnityEngine.AI;
+using AI;
 
 namespace Character
 {
@@ -36,7 +36,7 @@ namespace Character
         private CharacterController _characterController;
         private ActionController _actionController;
         private ComboManager _comboManager;
-        private NavMeshAgent _navMeshAgent;
+        private AINavigation _navigation;
         private Animator _animator;
         private Vector2 _inputVector;
 
@@ -45,26 +45,20 @@ namespace Character
         public float Gravity => gravity;
         public float RotationSpeed => rotationSpeed;
 
-        private bool IsAIControlled => _navMeshAgent != null;
+        private bool IsAIControlled => _navigation != null;
 
         private void Awake()
         {
             _characterController = GetComponent<CharacterController>();
             _actionController = GetComponent<ActionController>();
             _comboManager = GetComponent<ComboManager>();
-            _navMeshAgent = GetComponent<NavMeshAgent>();
+            _navigation = GetComponent<AINavigation>();
             _animator = GetComponent<Animator>();
-
-            if (_navMeshAgent != null)
-            {
-                _navMeshAgent.updatePosition = true;
-                _navMeshAgent.updateRotation = true;
-            }
         }
 
         private void Update()
         {
-            if (IsAIControlled && _navMeshAgent.enabled)
+            if (IsAIControlled && _navigation.IsDrivingTransform)
             {
                 _movementDisplacement = Vector3.zero;
                 _rootMotionDisplacement = Vector3.zero;
@@ -77,7 +71,7 @@ namespace Character
 
         private void LateUpdate()
         {
-            if (IsAIControlled && _navMeshAgent.enabled)
+            if (IsAIControlled && _navigation.IsDrivingTransform)
             {
                 return;
             }
@@ -213,12 +207,9 @@ namespace Character
 
         public float GetSpeed()
         {
-            if (IsAIControlled && _navMeshAgent.enabled)
-            {
-                return _navMeshAgent.velocity.magnitude;
-            }
-
-            return _horizontalVelocity.magnitude;
+            return IsAIControlled && _navigation.IsDrivingTransform
+                ? _navigation.Velocity.magnitude
+                : _horizontalVelocity.magnitude;
         }
 
         public void SetGravityEnabled(bool enabled)
@@ -238,8 +229,8 @@ namespace Character
                 return;
             }
 
-            float speed = _navMeshAgent.speed > 0f
-                ? Mathf.Clamp01(_navMeshAgent.velocity.magnitude / _navMeshAgent.speed)
+            float speed = _navigation.Speed > 0f
+                ? Mathf.Clamp01(_navigation.Velocity.magnitude / _navigation.Speed)
                 : 0f;
 
             _animator.applyRootMotion = false;

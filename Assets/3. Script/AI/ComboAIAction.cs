@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Combat;
 using UnityEngine;
 
 namespace AI
@@ -6,128 +7,107 @@ namespace AI
     [CreateAssetMenu(menuName = "UtilityAI/Actions/ComboAction", fileName = "ComboAIAction")]
     public class ComboAIAction : AIAction
     {
-        [Header("Combo Settings")]
-        [Tooltip("Delay before AI decides on next combo move (simulates reaction time)")]
+        [Header("Combo")]
         [SerializeField] private float reactionTime = 0.2f;
 
         [Range(-1f, 1f)]
         [SerializeField] private float minFacingDot = 0.65f;
 
         [SerializeField] private bool requiresTargetOpportunity = true;
-        
+
         private void Reset()
         {
             priority = 30;
         }
 
-        public override void Init(AIContext context)
+        public override void Execute(AIContext context)
         {
-            if (context.ComboManager == null)
+            ComboManager comboManager = context.ComboManager;
+            if (comboManager == null ||
+                Time.time - context.GetFloat(ContextKeys.LastComboInputTime) < reactionTime)
             {
-                Debug.LogError("ComboAIAction: ComboManager not found!");
+                return;
+            }
+
+            bool isAttacking =
+                context.ActionController.HasTag(Character.Core.ActionTags.Attacking);
+
+            if (!isAttacking)
+            {
+                StartCombo(context, comboManager);
+            }
+            else if (comboManager.IsInComboWindow)
+            {
+                ContinueCombo(context, comboManager);
             }
         }
 
-        public override void Execute(AIContext context)
+        private void StartCombo(AIContext context, ComboManager comboManager)
         {
-            if (context.ComboManager == null)
+            if (!CanStartCombo(context))
             {
-                Debug.LogWarning("ComboAIAction: ComboManager is null!");
                 return;
             }
 
-            float lastComboTime = context.GetData<float>("lastComboInputTime");
-            if (Time.time - lastComboTime < reactionTime)
+            RuntimeComboNode rootNode = comboManager.RootNode;
+            if (rootNode == null || rootNode.Children.Count == 0)
+            {
                 return;
-
-            var comboManager = context.ComboManager;
-            bool canStartNewCombo = !context.ActionController.HasTag(Character.Core.ActionTags.Attacking);
-            bool canContinueCombo = context.ActionController.HasTag(Character.Core.ActionTags.Attacking) &&
-                                   comboManager.IsInComboWindow;
-
-            // Start new combo
-            if (canStartNewCombo)
-            {
-                if (!CanStartCombo(context))
-                {
-                    return;
-                }
-
-                var rootNode = comboManager.RootNode;
-                if (rootNode == null || rootNode.Children.Count == 0)
-                {
-                    return;
-                }
-
-                var startKeys = new List<string>(rootNode.Children.Keys);
-                string key = startKeys[Random.Range(0, startKeys.Count)];
-
-                if (comboManager.TryExecuteCombo(key))
-                {
-                    context.SetData("lastComboInputTime", Time.time);
-                    Debug.Log($"[AI] Started combo with {key}");
-                }
-                else
-                {
-                    Debug.Log($"[ComboDebug] Failed to start combo with {key}");
-                }
             }
-            // Continue combo
-            else if (canContinueCombo)
-            {
-                Debug.Log($"[ComboDebug] Attempting to continue combo - window: {comboManager.IsInComboWindow}");
-                var currentNode = comboManager.CurrentNode;
-                if (currentNode != null && currentNode.Children.Count > 0)
-                {
-                    var keys = new List<string>(currentNode.Children.Keys);
-                    string key = keys[Random.Range(0, keys.Count)];
 
-                    if (comboManager.TryExecuteCombo(key))
-                    {
-                        context.SetData("lastComboInputTime", Time.time);
-                        Debug.Log($"[AI] Continued combo with {key}");
-                    }
-                    else
-                    {
-                        Debug.Log($"[ComboDebug] Failed to continue combo with {key}");
-                    }
-                }
-                else
-                {
-                    Debug.Log($"[ComboDebug] No available combo continuations");
-                }
+            ExecuteRandomChild(context, comboManager, rootNode);
+        }
+
+        private static void ContinueCombo(AIContext context, ComboManager comboManager)
+        {
+            RuntimeComboNode currentNode = comboManager.CurrentNode;
+            if (currentNode == null || currentNode.Children.Count == 0)
+            {
+                return;
+            }
+
+            ExecuteRandomChild(context, comboManager, currentNode);
+        }
+
+        private static void ExecuteRandomChild(
+            AIContext context,
+            ComboManager comboManager,
+            RuntimeComboNode parent)
+        {
+            var keys = new List<string>(parent.Children.Keys);
+            string key = keys[Random.Range(0, keys.Count)];
+
+            if (comboManager.TryExecuteCombo(key))
+            {
+                context.SetData(ContextKeys.LastComboInputTime, Time.time);
             }
         }
 
         private bool CanStartCombo(AIContext context)
         {
-            if (context.GetData<float>(ContextKeys.InMeleeRange) < 0.5f)
+            if (context.GetFloat(ContextKeys.InMeleeRange) < 0.5f ||
+                (requiresTargetOpportunity &&
+                 context.GetFloat(ContextKeys.TargetOpportunity) < 0.5f) ||
+                context.CurrentTarget == null)
             {
                 return false;
             }
 
-            if (requiresTargetOpportunity && context.GetData<float>(ContextKeys.TargetOpportunity) < 0.5f)
-            {
-                return false;
-            }
-
-            if (context.CurrentTarget == null)
-            {
-                return false;
-            }
-
-            Vector3 toTarget = context.CurrentTarget.position - context.Brain.transform.position;
+            Vector3 toTarget =
+                context.CurrentTarget.position - context.Brain.transform.position;
             toTarget.y = 0f;
-            if (toTarget.sqrMagnitude < 0.0001f)
+
+            if (toTarget.sqrMagnitude <= Mathf.Epsilon)
             {
                 return true;
             }
 
             Vector3 forward = context.Brain.transform.forward;
             forward.y = 0f;
+
             if (Vector3.Dot(forward.normalized, toTarget.normalized) < minFacingDot)
             {
-                context.Movement?.SetRotationToDirection(toTarget);
+                context.Movement.SetRotationToDirection(toTarget);
             }
 
             return true;

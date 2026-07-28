@@ -1,133 +1,135 @@
 using System.Collections.Generic;
 using Character;
 using Combat;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.AI;
 
 namespace AI
 {
     public class AIContext
     {
-        private Transform _playerCharacter;
-        private Transform _currentTarget;
-        private AIBrain _brain;
-        
-        // AI's own components
-        private NavMeshAgent _agent;
-        private ActionController _actionController;
-        private ComboManager _comboManager;
-        private Animator _animator;
-        private HealthComponent _health;
-        private StaminaComponent _stamina;
-        private CharacterMovement _movement;
-        
-        // Target's components
-        private HealthComponent _targetHealth;
-        private StaminaComponent _targetStamina;
-        private ActionController _targetActionController;
-        private CharacterMovement _targetMovement;
+        private readonly AIBrain _brain;
+        private readonly AINavigation _navigation;
+        private readonly ActionController _actionController;
+        private readonly ComboManager _comboManager;
+        private readonly Animator _animator;
+        private readonly HealthComponent _health;
+        private readonly StaminaComponent _stamina;
+        private readonly CharacterMovement _movement;
 
-        private bool _hasAgentDestination;
-        private Vector3 _lastAgentDestination;
-        private float _lastStoppingDistance;
+        private readonly Transform _currentTarget;
+        private readonly HealthComponent _targetHealth;
+        private readonly StaminaComponent _targetStamina;
+        private readonly ActionController _targetActionController;
+        private readonly CharacterMovement _targetMovement;
 
         private readonly Dictionary<string, object> _data = new();
 
         public AIContext(AIBrain brain, Transform playerCharacter)
         {
-            if (brain is null || playerCharacter is null)
+            _brain = brain;
+            _currentTarget = playerCharacter;
+
+            if (brain == null)
             {
                 return;
             }
 
-            _brain = brain;
-            _playerCharacter = playerCharacter;
-            _currentTarget = playerCharacter;
-            
-            _agent = brain.GetOrAddComponent<NavMeshAgent>();
-            _actionController = brain.GetOrAddComponent<ActionController>();
-            _comboManager = brain.GetOrAddComponent<ComboManager>();
+            _navigation = brain.GetComponent<AINavigation>();
+            _actionController = brain.GetComponent<ActionController>();
+            _comboManager = brain.GetComponent<ComboManager>();
             _animator = brain.GetComponent<Animator>();
             _health = brain.GetComponent<HealthComponent>();
             _stamina = brain.GetComponent<StaminaComponent>();
             _movement = brain.GetComponent<CharacterMovement>();
-            
-            // NavMeshAgent와 CharacterController 통합 설정
-            if (_agent != null)
+
+            if (playerCharacter == null)
             {
-                // NavMeshAgent는 경로 계산만, CharacterController가 실제 이동 담당
-                _agent.updatePosition = true;
-                _agent.updateRotation = true;
+                return;
             }
-            
-            if (_playerCharacter != null)
-            {
-                _targetHealth = _playerCharacter.GetComponent<HealthComponent>();
-                _targetStamina = _playerCharacter.GetComponent<StaminaComponent>();
-                _targetActionController = _playerCharacter.GetComponent<ActionController>();
-                _targetMovement = _playerCharacter.GetComponent<CharacterMovement>();
-            }
+
+            _targetHealth = playerCharacter.GetComponent<HealthComponent>();
+            _targetStamina = playerCharacter.GetComponent<StaminaComponent>();
+            _targetActionController = playerCharacter.GetComponent<ActionController>();
+            _targetMovement = playerCharacter.GetComponent<CharacterMovement>();
         }
-        
+
+        public bool IsValid =>
+            _brain != null &&
+            _currentTarget != null &&
+            _navigation != null &&
+            _actionController != null &&
+            _comboManager != null &&
+            _animator != null &&
+            _health != null &&
+            _stamina != null &&
+            _movement != null;
+
         public AIBrain Brain => _brain;
-        public NavMeshAgent Agent => _agent;
+        public AINavigation Navigation => _navigation;
         public ActionController ActionController => _actionController;
         public ComboManager ComboManager => _comboManager;
         public Animator Animator => _animator;
         public HealthComponent Health => _health;
         public StaminaComponent Stamina => _stamina;
         public CharacterMovement Movement => _movement;
-        
+
         public Transform CurrentTarget => _currentTarget;
         public HealthComponent TargetHealth => _targetHealth;
         public StaminaComponent TargetStamina => _targetStamina;
         public ActionController TargetActionController => _targetActionController;
         public CharacterMovement TargetMovement => _targetMovement;
 
-        public T GetData<T>(string key) => _data.TryGetValue(key, out var value) ? (T)value : default;
-        public void SetData(string key, object value) => _data[key] = value;
-        
-        // 타입 변환 없이 원본 데이터 반환
-        public object GetDataRaw(string key) => _data.TryGetValue(key, out var value) ? value : null;
-        
-        // 키 존재 여부 확인
-        public bool HasData(string key) => _data.ContainsKey(key);
-
-        public void SetAgentDestinationToTarget(float stoppingDistance = 0f)
+        public bool TryGetData<T>(string key, out T value)
         {
-            if (_agent == null || _currentTarget == null || !_agent.isActiveAndEnabled || !_agent.isOnNavMesh)
+            if (_data.TryGetValue(key, out object storedValue) && storedValue is T typedValue)
             {
-                return;
+                value = typedValue;
+                return true;
             }
 
-            bool targetMoved = !_hasAgentDestination ||
-                               (_lastAgentDestination - _currentTarget.position).sqrMagnitude > 0.01f;
-            bool stoppingDistanceChanged = !Mathf.Approximately(_lastStoppingDistance, stoppingDistance);
-            bool requiresPath = !_agent.hasPath && !_agent.pathPending;
-
-            _agent.stoppingDistance = stoppingDistance;
-            _agent.isStopped = false;
-
-            if (!targetMoved && !stoppingDistanceChanged && !requiresPath)
-            {
-                return;
-            }
-
-            if (_agent.SetDestination(_currentTarget.position))
-            {
-                _hasAgentDestination = true;
-                _lastAgentDestination = _currentTarget.position;
-                _lastStoppingDistance = stoppingDistance;
-            }
+            value = default;
+            return false;
         }
-        
-        // 액션 쿨다운 체크 메서드
+
+        public T GetData<T>(string key, T fallback = default)
+        {
+            return TryGetData(key, out T value) ? value : fallback;
+        }
+
+        public float GetFloat(string key, float fallback = 0f)
+        {
+            if (!_data.TryGetValue(key, out object value))
+            {
+                return fallback;
+            }
+
+            return value switch
+            {
+                byte number => number,
+                short number => number,
+                int number => number,
+                long number => number,
+                float number => number,
+                double number => (float)number,
+                decimal number => (float)number,
+                _ => fallback
+            };
+        }
+
+        public void SetData(string key, object value)
+        {
+            _data[key] = value;
+        }
+
+
+
+
+
         public bool IsActionOnCooldown(Actions.Core.ActionBase action)
         {
             return _actionController != null && _actionController.IsActionOnCooldown(action);
         }
-        
+
         public float GetActionCooldownRemaining(Actions.Core.ActionBase action)
         {
             return _actionController != null ? _actionController.GetCooldownRemaining(action) : 0f;

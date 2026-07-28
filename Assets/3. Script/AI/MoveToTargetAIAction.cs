@@ -11,14 +11,15 @@ namespace AI
         {
             priority = 5;
         }
-        
-        public override void Init(AIContext context)
-        {
-        }
-        
+
         public override void Execute(AIContext context)
         {
-            context.SetAgentDestinationToTarget(combatStopDistance);
+            if (context.CurrentTarget != null)
+            {
+                context.Navigation.SetDestination(
+                    context.CurrentTarget.position,
+                    combatStopDistance);
+            }
         }
     }
 }

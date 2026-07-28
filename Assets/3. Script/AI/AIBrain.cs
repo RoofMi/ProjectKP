@@ -4,13 +4,11 @@ using Character;
 using Character.Core;
 using Combat;
 using Combat.Events;
-using Test;
 using UnityEngine;
-using UnityEngine.AI;
 
 namespace AI
 {
-    [RequireComponent(typeof(NavMeshAgent))]
+    [RequireComponent(typeof(AINavigation))]
     public class AIBrain : MonoBehaviour
     {
         [Header("Target")]
@@ -35,14 +33,12 @@ namespace AI
         private AIAction _currentAction;
         private float _nextDecisionTime;
         
-        // Time tracking for context updates
         private float _combatStartTime;
         private float _lastHitTime;
         private float _lastActionTime;
         
-        // Hit confirmation tracking
         private bool _hitConfirmed;
-        private const float HIT_CONFIRM_DURATION = 0.3f; // 히트 확인 유지 시간
+        private const float HIT_CONFIRM_DURATION = 0.3f;
 
         private bool _wasTargetAttacking;
         private float _timeInMeleeRange;
@@ -53,15 +49,32 @@ namespace AI
         private void Awake()
         {
             _context = new AIContext(this, _playerCharacter);
-            _combatStartTime = Time.time;
-            _lastHitTime = float.MinValue; // 초기값 설정
-
-            foreach (var action in _actions)
+            if (!_context.IsValid)
             {
-                action.Init(_context);
+                Debug.LogError(
+                    "[AIBrain] Target and required AI combat components must be configured.",
+                    this);
+                enabled = false;
+                return;
             }
-            
-            // Combat event 구독
+
+            _combatStartTime = Time.time;
+            _lastHitTime = float.MinValue;
+
+            if (_actions != null)
+            {
+                foreach (AIAction action in _actions)
+                {
+                    if (action == null)
+                    {
+                        Debug.LogWarning("[AIBrain] Null action entry ignored.", this);
+                        continue;
+                    }
+
+                    action.Init(_context);
+                }
+            }
+
             if (_combatEventChannel != null)
             {
                 _combatEventChannel.Subscribe(OnHitDetected);
@@ -70,26 +83,23 @@ namespace AI
         
         private void OnDestroy()
         {
-            // Combat event 구독 해제
             if (_combatEventChannel != null)
             {
                 _combatEventChannel.Unsubscribe(OnHitDetected);
             }
         }
         
-        // 히트 이벤트 처리
         private void OnHitDetected(HitInfo hitInfo)
         {
-            // AI가 공격자인 경우 히트 확인
-            if (hitInfo.attacker == gameObject)
+            if (hitInfo.attacker != gameObject)
             {
-                _lastHitTime = Time.time;
-                _hitConfirmed = true;
-                UnityEngine.Debug.Log($"[AI] Hit confirmed on {hitInfo.target.name}");
+                return;
             }
+
+            _lastHitTime = Time.time;
+            _hitConfirmed = true;
         }
         
-        // 액션 실행 시 호출 (외부에서 호출 가능)
         public void OnActionExecuted()
         {
             _lastActionTime = Time.time;
@@ -104,21 +114,15 @@ namespace AI
         {
             UpdateContext();
             
-            // Check if currently executing a blocking action (like dash)
             bool isExecutingAction = _context.ActionController != null && 
                                    _context.ActionController.HasTag(ActionTags.ExecutingAction);
             
-            // If executing a blocking action (e.g., dash), skip decision making
             if (isExecutingAction)
             {
-                // Don't execute any actions during blocking actions like dash
-                // The action will complete on its own
-                return; // Skip decision making and execution entirely
+                return;
             }
             
-            // Normal execution for non-blocking actions
             
-            // Evaluate new action periodically
             if (Time.time >= _nextDecisionTime)
             {
                 AIAction bestAction = SelectBestAction();
@@ -126,7 +130,7 @@ namespace AI
                 if (bestAction != _currentAction &&
                     (_currentAction == null || Time.time >= _nextActionChangeTime))
                 {
-                    RecordDecisionChange(bestAction); // 디버깅용 히스토리 기록
+                    RecordDecisionChange(bestAction);
                     _currentAction = bestAction;
                     _nextActionChangeTime = Time.time + actionCommitmentDuration;
                 }
@@ -141,16 +145,28 @@ namespace AI
             AIAction bestAction = null;
             float highestUtility = float.MinValue;
 
-            foreach (var action in _actions)
+            if (_actions == null)
             {
+                return null;
+            }
+
+            foreach (AIAction action in _actions)
+            {
+                if (action == null)
+                {
+                    continue;
+                }
+
                 float utility = action.CalculateUtility(_context);
-                if (utility > highestUtility)
+                if (bestAction == null ||
+                    utility > highestUtility ||
+                    (Mathf.Approximately(utility, highestUtility) && action.Priority > bestAction.Priority))
                 {
                     highestUtility = utility;
                     bestAction = action;
                 }
             }
-            
+
             return bestAction;
         }
 
@@ -283,7 +299,6 @@ namespace AI
         
         #region Debug Support
         
-        // 디버그용 필드들
         private List<DecisionRecord> _decisionHistory = new List<DecisionRecord>();
         private const int MAX_HISTORY = 10;
         
@@ -317,7 +332,6 @@ namespace AI
             }
         }
         
-        // 의사결정 변경 기록 (디버깅용)
         private void RecordDecisionChange(AIAction newAction)
         {
             if (newAction == null) return;
@@ -331,62 +345,59 @@ namespace AI
             }
         }
         
-        // 모든 액션과 Utility 점수 반환
         public List<ActionUtilityInfo> GetAllActionsWithUtility()
         {
             var result = new List<ActionUtilityInfo>();
-            foreach (var action in _actions)
+            if (_actions == null)
             {
-                if (action != null)
-                {
-                    float utility = action.CalculateUtility(_context);
-                    bool isCurrent = action == _currentAction;
-                    result.Add(new ActionUtilityInfo(action.name, utility, isCurrent));
-                }
+                return result;
             }
+
+            foreach (AIAction action in _actions)
+            {
+                if (action == null)
+                {
+                    continue;
+                }
+
+                result.Add(new ActionUtilityInfo(
+                    action.name,
+                    action.CalculateUtility(_context),
+                    action == _currentAction));
+            }
+
             return result;
         }
         
-        // 현재 실행 중인 액션
         public string GetCurrentActionName()
         {
             return _currentAction != null ? _currentAction.name : "None";
         }
         
-        // Context 주요 값들
         public Dictionary<string, object> GetContextDebugInfo()
         {
-            var debugInfo = new Dictionary<string, object>();
-            
-            // Basic Status
-            debugInfo["Health"] = _context.GetData<float>(ContextKeys.Health);
-            debugInfo["Stamina"] = _context.GetData<float>(ContextKeys.Stamina);
-            debugInfo["IsAttacking"] = _context.GetData<float>(ContextKeys.IsAttacking) > 0.5f;
-            debugInfo["IsAirborne"] = _context.GetData<float>(ContextKeys.IsAirborne) > 0.5f;
-            debugInfo["IsStunned"] = _context.GetData<float>(ContextKeys.IsStunned) > 0.5f;
-            
-            // Distance & Position
-            debugInfo["DistanceToTarget"] = _context.GetData<float>(ContextKeys.DistanceToTarget);
-            debugInfo["InMeleeRange"] = _context.GetData<float>(ContextKeys.InMeleeRange) > 0.5f;
-            debugInfo["TimeInMeleeRange"] = _context.GetData<float>(ContextKeys.TimeInMeleeRange);
-            debugInfo["TimeSinceLastDash"] = _context.GetData<float>(ContextKeys.TimeSinceLastDash);
-            
-            // Combo Info
-            debugInfo["InCombo"] = _context.GetData<float>(ContextKeys.InCombo) > 0.5f;
-            debugInfo["ComboDepth"] = _context.GetData<int>(ContextKeys.ComboDepth);
-            debugInfo["ComboWindowActive"] = _context.GetData<float>(ContextKeys.ComboWindowActive) > 0.5f;
-            debugInfo["HitConfirm"] = _context.GetData<float>(ContextKeys.HitConfirm) > 0.5f;
-            
-            // Target Info
-            debugInfo["TargetHealth"] = _context.GetData<float>(ContextKeys.TargetHealth);
-            debugInfo["TargetAttacking"] = _context.GetData<float>(ContextKeys.TargetAttacking) > 0.5f;
-            debugInfo["TargetRecovery"] = _context.GetData<float>(ContextKeys.TargetRecovery) > 0.5f;
-            debugInfo["TargetOpportunity"] = _context.GetData<float>(ContextKeys.TargetOpportunity) > 0.5f;
-            
-            return debugInfo;
+            return new Dictionary<string, object>
+            {
+                ["Health"] = _context.GetFloat(ContextKeys.Health),
+                ["Stamina"] = _context.GetFloat(ContextKeys.Stamina),
+                ["IsAttacking"] = _context.GetFloat(ContextKeys.IsAttacking) > 0.5f,
+                ["IsAirborne"] = _context.GetFloat(ContextKeys.IsAirborne) > 0.5f,
+                ["IsStunned"] = _context.GetFloat(ContextKeys.IsStunned) > 0.5f,
+                ["DistanceToTarget"] = _context.GetFloat(ContextKeys.DistanceToTarget),
+                ["InMeleeRange"] = _context.GetFloat(ContextKeys.InMeleeRange) > 0.5f,
+                ["TimeInMeleeRange"] = _context.GetFloat(ContextKeys.TimeInMeleeRange),
+                ["TimeSinceLastDash"] = _context.GetFloat(ContextKeys.TimeSinceLastDash),
+                ["InCombo"] = _context.GetFloat(ContextKeys.InCombo) > 0.5f,
+                ["ComboDepth"] = _context.GetData<int>(ContextKeys.ComboDepth),
+                ["ComboWindowActive"] = _context.GetFloat(ContextKeys.ComboWindowActive) > 0.5f,
+                ["HitConfirm"] = _context.GetFloat(ContextKeys.HitConfirm) > 0.5f,
+                ["TargetHealth"] = _context.GetFloat(ContextKeys.TargetHealth),
+                ["TargetAttacking"] = _context.GetFloat(ContextKeys.TargetAttacking) > 0.5f,
+                ["TargetRecovery"] = _context.GetFloat(ContextKeys.TargetRecovery) > 0.5f,
+                ["TargetOpportunity"] = _context.GetFloat(ContextKeys.TargetOpportunity) > 0.5f
+            };
         }
         
-        // 의사결정 히스토리
         public List<DecisionRecord> GetDecisionHistory()
         {
             return new List<DecisionRecord>(_decisionHistory);

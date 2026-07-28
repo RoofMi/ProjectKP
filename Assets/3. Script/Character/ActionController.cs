@@ -5,7 +5,7 @@ using Actions.Core;
 using Character.Core;
 using Combat;
 using UnityEngine;
-using UnityEngine.AI;
+using AI;
 
 namespace Character
 {
@@ -15,7 +15,7 @@ namespace Character
         [SerializeField] private Animator _animator;
         [SerializeField] private CharacterMovement _movement;
         [SerializeField] private StaminaComponent _stamina;
-        [SerializeField] private NavMeshAgent _navMeshAgent;
+        [SerializeField] private AINavigation _navigation;
 
         [Header("Reactions")]
         [SerializeField] private HitReactionAction _hitReactionAction;
@@ -34,15 +34,15 @@ namespace Character
         private void Awake()
         {
             _tags = new HashSet<string>(_currentTags);
-            
+
             if (_animator == null) _animator = GetComponent<Animator>();
             if (_movement == null) _movement = GetComponent<CharacterMovement>();
             if (_stamina == null) _stamina = GetComponent<StaminaComponent>();
-            if (_navMeshAgent == null) _navMeshAgent = GetComponent<NavMeshAgent>();
+            if (_navigation == null) _navigation = GetComponent<AINavigation>();
             _health = GetComponent<HealthComponent>();
             _comboManager = GetComponent<ComboManager>();
             _playerInputHandler = GetComponent<PlayerInputHandler>();
-            
+
             _context = new ActionContext(gameObject);
         }
 
@@ -89,63 +89,62 @@ namespace Character
         
         public bool TryExecuteAction(ActionBase action, object data = null)
         {
-            
             if (action == null)
             {
                 Debug.LogWarning("[ActionController] Action is null!");
                 return false;
             }
-            
+
             if (!action.CanExecute(_context))
             {
                 Debug.LogWarning($"[ActionController] CanExecute returned false for {action.name}");
                 return false;
             }
-            
+
             if (IsActionOnCooldown(action))
             {
                 Debug.LogWarning($"[ActionController] Action {action.name} is on cooldown!");
                 return false;
             }
-            
-            var sameType = _activeActions.Find(a => 
-                a.Action.GetType() == action.GetType());
-            
+
+            ActiveAction sameType = _activeActions.Find(active =>
+                active.Action.GetType() == action.GetType());
+
             if (sameType != null)
             {
                 if (!sameType.Action.CanBeCancelledBy(action))
+                {
                     return false;
-                    
+                }
+
                 StopAction(sameType);
             }
-            
-            if (action.ShouldUseStamina() && action.staminaCost > 0)
+
+            if (action.ShouldUseStamina() && action.staminaCost > 0f)
             {
                 _stamina.UseStamina(action.staminaCost);
             }
-            Vector2 inputDirection = _movement != null ? _movement.GetInputDirection() : Vector2.zero;
 
+            Vector2 inputDirection = _movement != null
+                ? _movement.GetInputDirection()
+                : Vector2.zero;
             var active = new ActiveAction(action, data, inputDirection);
             _activeActions.Add(active);
 
-            if (_navMeshAgent != null && _navMeshAgent.enabled)
-            {
-                _navMeshAgent.isStopped = true;
-                _navMeshAgent.enabled = false;
+            _navigation?.Suspend();
 
-                if (_animator != null && action is Actions.ComboAction)
-                {
-                    _animator.applyRootMotion = true;
-                }
+            if (_animator != null && action is Actions.ComboAction)
+            {
+                _animator.applyRootMotion = true;
             }
 
             action.Execute(_context);
-            
+
             if (action.cooldown > 0f)
             {
                 _cooldownEndTimes[action] = Time.time + action.cooldown;
             }
-            
+
             if (action is DurationAction durationAction)
             {
                 active.Coroutine = StartCoroutine(RunDurationActionInternal(active, durationAction));
@@ -153,9 +152,9 @@ namespace Character
             else
             {
                 _activeActions.Remove(active);
-                RestoreNavMeshAgent();
+                RestoreNavigation();
             }
-            
+
             return true;
         }
         
@@ -164,8 +163,7 @@ namespace Character
             yield return action.ExecuteOverTime(_context, active);
             action.OnCompleted(_context, active);
             _activeActions.Remove(active);
-
-            RestoreNavMeshAgent();
+            RestoreNavigation();
         }
         
         private void StopAction(ActiveAction activeAction)
@@ -177,8 +175,7 @@ namespace Character
 
             activeAction.Action.OnCancelled(_context, activeAction);
             _activeActions.Remove(activeAction);
-
-            RestoreNavMeshAgent();
+            RestoreNavigation();
         }
 
         private void HandleOwnerDeath()
@@ -204,12 +201,8 @@ namespace Character
 
         private bool IsGroundedForHitReaction()
         {
-            if (_navMeshAgent != null && _navMeshAgent.isOnNavMesh)
-            {
-                return true;
-            }
-
-            return _movement != null && _movement.IsGrounded();
+            return (_navigation != null && _navigation.IsOnNavMesh) ||
+                (_movement != null && _movement.IsGrounded());
         }
 
         private void CancelAllActions()
@@ -220,21 +213,14 @@ namespace Character
             }
         }
 
-        private void RestoreNavMeshAgent()
+        private void RestoreNavigation()
         {
-            if (_activeActions.Count != 0 || _navMeshAgent == null || _navMeshAgent.enabled)
+            if (_activeActions.Count != 0 || _navigation == null)
             {
                 return;
             }
 
-            if (!NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 1.5f, NavMesh.AllAreas))
-            {
-                return;
-            }
-
-            _navMeshAgent.enabled = true;
-            _navMeshAgent.Warp(hit.position);
-            _navMeshAgent.isStopped = false;
+            _navigation.Resume(transform.position);
 
             if (_animator != null)
             {

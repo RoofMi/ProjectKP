@@ -103,16 +103,16 @@ namespace Character
                 {
                     _actionController.AddTag(ActionTags.Grounded);
                     _actionController.RemoveTag(ActionTags.Airborne);
-                    _actionController.RemoveTag("AirDashUsed");
+                    _actionController.RemoveTag(ActionTags.AirDashUsed);
                 }
+
+                return;
             }
-            else
+
+            if (!_actionController.HasTag(ActionTags.Airborne))
             {
-                if (!_actionController.HasTag(ActionTags.Airborne))
-                {
-                    _actionController.RemoveTag(ActionTags.Grounded);
-                    _actionController.AddTag(ActionTags.Airborne);
-                }
+                _actionController.RemoveTag(ActionTags.Grounded);
+                _actionController.AddTag(ActionTags.Airborne);
             }
         }
         
