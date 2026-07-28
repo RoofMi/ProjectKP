@@ -35,8 +35,6 @@ public class MainMenuController : MonoBehaviour
     {
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
-#elif !UNITY_EDITOR
-        System.Diagnostics.Process.GetCurrentProcess().Kill();
 #else
         Application.Quit();
 #endif
