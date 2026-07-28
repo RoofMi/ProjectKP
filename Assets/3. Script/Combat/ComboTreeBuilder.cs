@@ -5,76 +5,64 @@ namespace Combat
 {
     public static class ComboTreeBuilder
     {
-        public static RuntimeComboTree BuildTree(IEnumerable<ComboDefinition> comboDefs)
+        public static RuntimeComboNode BuildTree(IEnumerable<ComboDefinition> comboDefinitions)
         {
-            if (comboDefs == null)
+            var root = new RuntimeComboNode();
+            if (comboDefinitions == null)
             {
                 Debug.LogError("ComboTreeBuilder: comboDefs is null");
-                return new RuntimeComboTree();
-            }
-            
-            var tree = new RuntimeComboTree();
-            var rootNode = tree.Root;
-            
-            foreach (var def in comboDefs)
-            {
-                if (def == null || def.ComboSteps == null || def.ComboSteps.Count == 0)
-                {
-                    Debug.LogWarning($"ComboTreeBuilder: Invalid combo definition {def?.name}");
-                    continue;
-                }
-                
-                InsertCombo(def, rootNode);
+                return root;
             }
 
-            return tree;
-        }
-        
-        private static void InsertCombo(ComboDefinition comboDef, RuntimeComboNode root)
-        {
-            RuntimeComboNode current = root;
-            
-            foreach (var stepRef in comboDef.ComboSteps)
+            foreach (ComboDefinition definition in comboDefinitions)
             {
-                if (stepRef == null || stepRef.ComboNode == null)
+                if (definition == null || definition.ComboSteps == null || definition.ComboSteps.Count == 0)
                 {
-                    Debug.LogWarning($"ComboTreeBuilder: Invalid step reference in {comboDef.name}");
+                    Debug.LogWarning($"ComboTreeBuilder: Invalid combo definition {definition?.name}");
                     continue;
                 }
-                
-                if (!current.Children.TryGetValue(stepRef.InputKey, out var childList))
+
+                InsertCombo(definition, root);
+            }
+
+            return root;
+        }
+
+        private static void InsertCombo(ComboDefinition comboDefinition, RuntimeComboNode root)
+        {
+            RuntimeComboNode current = root;
+
+            foreach (ComboStepReference stepReference in comboDefinition.ComboSteps)
+            {
+                if (stepReference == null || stepReference.ComboNode == null)
                 {
-                    childList = new List<RuntimeComboNode>();
-                    current.Children[stepRef.InputKey] = childList;
+                    Debug.LogWarning($"ComboTreeBuilder: Invalid step reference in {comboDefinition.name}");
+                    continue;
                 }
-                
-                // 중복 노드 검사
-                RuntimeComboNode existingNode = null;
-                foreach (var node in childList)
+
+                if (!current.Children.TryGetValue(stepReference.InputKey, out List<RuntimeComboNode> childNodes))
                 {
-                    if (node.StepNode == stepRef.ComboNode &&
-                        node.DamageMultiplier == stepRef.DamageMultiplier &&
-                        node.HitReaction == stepRef.HitReaction &&
-                        node.WindowStart == stepRef.WindowStart &&
-                        node.WindowEnd == stepRef.WindowEnd &&
-                        node.StaminaCost == stepRef.StaminaCost)
-                    {
-                        existingNode = node;
-                        break;
-                    }
+                    childNodes = new List<RuntimeComboNode>();
+                    current.Children[stepReference.InputKey] = childNodes;
                 }
+
+                RuntimeComboNode existingNode = childNodes.Find(node =>
+                    node.StepNode == stepReference.ComboNode &&
+                    node.DamageMultiplier == stepReference.DamageMultiplier &&
+                    node.HitReaction == stepReference.HitReaction &&
+                    node.WindowStart == stepReference.WindowStart &&
+                    node.WindowEnd == stepReference.WindowEnd &&
+                    node.StaminaCost == stepReference.StaminaCost);
 
                 if (existingNode != null)
                 {
                     current = existingNode;
+                    continue;
                 }
-                else
-                {
-                    // 새로운 생성자 사용
-                    var newNode = new RuntimeComboNode(stepRef);
-                    childList.Add(newNode);
-                    current = newNode;
-                }
+
+                var newNode = new RuntimeComboNode(stepReference);
+                childNodes.Add(newNode);
+                current = newNode;
             }
         }
     }

@@ -11,7 +11,7 @@ namespace AI.ScriptableObject
 
         public override float Evaluate(AIContext context)
         {
-            float inputValue = context.GetData<float>(_contextKey);
+            float inputValue = context.GetFloat(_contextKey);
 
             float utility = _curve.Evaluate(inputValue);
             return Mathf.Clamp01(utility);
@@ -20,9 +20,8 @@ namespace AI.ScriptableObject
         private void Reset()
         {
             _curve = new AnimationCurve(
-                new Keyframe(0f, 1f), // When normalized distance is 0 then utility is 1
-                new Keyframe(1f, 0f) // When normalized distance is 1 then utility is 0
-            );
+                new Keyframe(0f, 1f),
+                new Keyframe(1f, 0f));
         }
     }
 }
