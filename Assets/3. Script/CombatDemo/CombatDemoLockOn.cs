@@ -23,9 +23,15 @@ namespace CombatDemo
         private void Awake()
         {
             _actionController = GetComponent<ActionController>();
-            _camera ??= Object.FindFirstObjectByType<CinemachineCamera>();
-            _defaultLookAt = _camera != null ? _camera.LookAt : null;
-            ResolveTarget();
+            if (_actionController == null || _camera == null || _target == null)
+            {
+                Debug.LogError("[CombatDemoLockOn] Inspector references are incomplete.", this);
+                enabled = false;
+                return;
+            }
+
+            _defaultLookAt = _camera.LookAt;
+            _targetHealth = _target.GetComponent<HealthComponent>();
         }
 
         private void OnDisable()
@@ -45,7 +51,7 @@ namespace CombatDemo
                 return;
             }
 
-            if (_target == null || (_targetHealth != null && _targetHealth.IsDead))
+            if (_targetHealth != null && _targetHealth.IsDead)
             {
                 SetLock(false);
                 return;
@@ -57,11 +63,6 @@ namespace CombatDemo
 
         private void SetLock(bool shouldLock)
         {
-            if (shouldLock)
-            {
-                ResolveTarget();
-            }
-
             IsLockedOn = shouldLock && _target != null && _camera != null;
             if (_camera != null)
             {
@@ -69,34 +70,24 @@ namespace CombatDemo
             }
         }
 
-        private void ResolveTarget()
-        {
-            if (_target == null)
-            {
-                var enemy = GameObject.FindGameObjectWithTag("Enemy");
-                _target = enemy != null ? enemy.transform : null;
-            }
-
-            _targetHealth = _target != null ? _target.GetComponent<HealthComponent>() : null;
-        }
-
         private void RotateTowardsTarget()
         {
-            if (_actionController != null &&
-                (_actionController.HasTag(ActionTags.Attacking) || _actionController.HasTag(ActionTags.Dashing)))
+            if (_actionController.HasTag(ActionTags.Attacking) ||
+                _actionController.HasTag(ActionTags.Dashing))
             {
                 return;
             }
 
-            var direction = _target.position - transform.position;
+            Vector3 direction = _target.position - transform.position;
             direction.y = 0f;
             if (direction.sqrMagnitude <= 0.001f)
             {
                 return;
             }
 
-            var targetRotation = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            transform.rotation =
+                Quaternion.Slerp(transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
         }
     }
 }

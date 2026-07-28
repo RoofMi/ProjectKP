@@ -5,41 +5,40 @@ namespace Combat
 {
     public class WeaponManager : MonoBehaviour
     {
-        [Header("Test Configuration")]
+        [Header("Configuration")]
         [SerializeField] private WeaponBase _weaponToTest;
         [SerializeField] private Transform _weaponMount;
-        
+        [SerializeField] private LayerMask _targetLayers;
+
         private GameObject _currentWeaponInstance;
         private ComboManager _comboManager;
         private Hitbox[] _hitboxes;
         private WeaponBase _equippedWeapon;
-        private LayerMask _targetLayers;
-        private bool _hasTargetLayerOverride;
         private bool _hasAttackData;
-        
-        void Start()
+
+        private void Start()
         {
             _comboManager = GetComponent<ComboManager>();
-            
+
             if (_weaponMount == null)
             {
-                Debug.LogError("weaponMount not assigned.");
+                Debug.LogError("[WeaponManager] Weapon mount is not assigned.", this);
             }
-            
+
             if (_weaponToTest != null)
             {
                 EquipWeapon(_weaponToTest);
             }
         }
-        
+
         public void EquipWeapon(WeaponBase weapon)
         {
             if (weapon == null)
             {
-                Debug.LogError("[WeaponManager] Cannot equip null weapon!");
+                Debug.LogError("[WeaponManager] Cannot equip a null weapon.", this);
                 return;
             }
-            
+
             ResetAttackState();
 
             if (_currentWeaponInstance != null)
@@ -48,43 +47,35 @@ namespace Combat
             }
 
             _equippedWeapon = weapon;
-            
-            // SO에서 인스턴스 생성
-            if (weapon.WeaponPrefab != null && _weaponMount != null)
-            {
-                _currentWeaponInstance = Instantiate(weapon.WeaponPrefab, _weaponMount);
-                _currentWeaponInstance.transform.localPosition = new Vector3(0.1f, -0.03f, 0.01f);
-                _currentWeaponInstance.transform.localRotation = Quaternion.Euler(40f, -80f, -80f);
-                SetLayerRecursively(_currentWeaponInstance, gameObject.layer);
-                
-                
-                _hitboxes = _currentWeaponInstance.GetComponentsInChildren<Hitbox>(true);
-                
-                // 히트박스 초기 설정
-                foreach (var hitbox in _hitboxes)
-                {
-                    hitbox.ClearAttackData();
-                    if (_hasTargetLayerOverride)
-                    {
-                        hitbox.SetTargetLayers(_targetLayers);
-                    }
 
-                    hitbox.DisableHitbox();
-                }
-            }
-            else
+            if (weapon.WeaponPrefab == null || _weaponMount == null)
             {
-                Debug.LogError($"[WeaponManager] Failed - Prefab: {weapon.WeaponPrefab}, Mount: {_weaponMount}");
+                Debug.LogError(
+                    $"[WeaponManager] Weapon prefab or mount is missing on {name}.",
+                    this);
+                return;
             }
-            
-            // SO에서 콤보 로드
+
+            _currentWeaponInstance = Instantiate(weapon.WeaponPrefab, _weaponMount);
+            _currentWeaponInstance.transform.localPosition = new Vector3(0.1f, -0.03f, 0.01f);
+            _currentWeaponInstance.transform.localRotation = Quaternion.Euler(40f, -80f, -80f);
+            SetLayerRecursively(_currentWeaponInstance, gameObject.layer);
+
+            _hitboxes = _currentWeaponInstance.GetComponentsInChildren<Hitbox>(true);
+            foreach (Hitbox hitbox in _hitboxes)
+            {
+                hitbox.ClearAttackData();
+                hitbox.SetTargetLayers(_targetLayers);
+                hitbox.DisableHitbox();
+            }
+
             if (_comboManager != null && weapon.Combos != null && weapon.Combos.Length > 0)
             {
                 _comboManager.SetWeaponCombos(weapon.Combos);
             }
             else
             {
-                Debug.LogWarning($"No combos to load - ComboManager: {_comboManager != null}, Combos: {weapon.Combos?.Length ?? 0}");
+                Debug.LogWarning($"[WeaponManager] No combos are configured on {weapon.name}.", this);
             }
         }
 
@@ -95,12 +86,12 @@ namespace Combat
                 return;
             }
 
-            foreach (var hitbox in _hitboxes)
+            foreach (Hitbox hitbox in _hitboxes)
             {
                 hitbox.EnableHitbox();
             }
         }
-        
+
         public void DisableHitboxes()
         {
             if (_hitboxes == null)
@@ -108,7 +99,7 @@ namespace Combat
                 return;
             }
 
-            foreach (var hitbox in _hitboxes)
+            foreach (Hitbox hitbox in _hitboxes)
             {
                 hitbox.DisableHitbox();
             }
@@ -118,19 +109,19 @@ namespace Combat
         {
             ResetAttackState();
 
-            if (comboNode == null || _equippedWeapon == null || _hitboxes == null || _hitboxes.Length == 0)
+            if (comboNode == null ||
+                _equippedWeapon == null ||
+                _hitboxes == null ||
+                _hitboxes.Length == 0)
             {
-                Debug.LogWarning("[WeaponManager] Cannot configure attack data.");
+                Debug.LogWarning("[WeaponManager] Cannot configure attack data.", this);
                 return false;
             }
 
             float damage = Mathf.Max(0f, _equippedWeapon.BaseDamage) * comboNode.DamageMultiplier;
-            foreach (var hitbox in _hitboxes)
+            foreach (Hitbox hitbox in _hitboxes)
             {
-                hitbox.ConfigureAttack(
-                    gameObject,
-                    damage,
-                    comboNode.HitReaction);
+                hitbox.ConfigureAttack(gameObject, damage, comboNode.HitReaction);
             }
 
             _hasAttackData = true;
@@ -147,31 +138,10 @@ namespace Combat
                 return;
             }
 
-            foreach (var hitbox in _hitboxes)
+            foreach (Hitbox hitbox in _hitboxes)
             {
                 hitbox.ClearAttackData();
             }
-        }
-
-        public void SetTargetLayers(LayerMask targetLayers)
-        {
-            _targetLayers = targetLayers;
-            _hasTargetLayerOverride = true;
-
-            if (_hitboxes == null)
-            {
-                return;
-            }
-
-            foreach (var hitbox in _hitboxes)
-            {
-                hitbox.SetTargetLayers(_targetLayers);
-            }
-        }
-
-        public bool TargetsLayer(int layer)
-        {
-            return layer >= 0 && _hasTargetLayerOverride && (_targetLayers.value & (1 << layer)) != 0;
         }
 
         private static void SetLayerRecursively(GameObject gameObject, int layer)
@@ -181,14 +151,6 @@ namespace Combat
             {
                 SetLayerRecursively(child.gameObject, layer);
             }
-        }
-        
-        // 테스트용 Context Menu
-        [ContextMenu("Test Equip Weapon")]
-        void TestEquip()
-        {
-            if (_weaponToTest != null)
-                EquipWeapon(_weaponToTest);
         }
     }
 }

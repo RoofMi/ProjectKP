@@ -52,6 +52,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: PlayerPrefab
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: a403508c543e726458c377f80e0227c0, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: a403508c543e726458c377f80e0227c0, type: 3}
       propertyPath: m_Controller
       value: 
@@ -67,9 +71,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a403508c543e726458c377f80e0227c0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6917062583001466832}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a403508c543e726458c377f80e0227c0, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 7805837823691166082}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a403508c543e726458c377f80e0227c0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1298929868636430338}
@@ -133,18 +134,6 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 1.08, z: 0}
---- !u!114 &7805837823691166082
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4914577023205309158}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2ce6223eb0b3b6842ba66a78f53da870, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1298929868636430338
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -254,6 +243,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _weaponToTest: {fileID: 11400000, guid: 99df796d9f1b70141961040f5cb62a56, type: 2}
   _weaponMount: {fileID: 6696301236896196909}
+  _targetLayers:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!114 &1563268300463646229
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -282,6 +274,7 @@ MonoBehaviour:
   _animator: {fileID: 1846451363874044454}
   _movement: {fileID: 1298929868636430338}
   _stamina: {fileID: 8291677710790064781}
+  _navigation: {fileID: 0}
   _hitReactionAction: {fileID: 11400000, guid: 6a00e4fde22f4bd79e2e732668d1b632, type: 2}
   _activeActions: []
   _currentTags:
